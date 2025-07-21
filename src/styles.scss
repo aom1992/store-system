@@ -1,0 +1,88 @@
+/* You can add global styles to this file, and also import other style files */
+
+$gutter: 1rem; //for primeflex grid system
+@import "assets/layout/styles/layout/layout.scss";
+
+/* PrimeNG */
+@import "../node_modules/primeng/resources/primeng.min.css";
+@import "../node_modules/primeflex/primeflex.scss";
+@import "../node_modules/primeicons/primeicons.css";
+
+@font-face {
+    font-family: 'IBM Plex Sans Thai';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('assets/fonts/IBMPlexSansThai-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'IBM Plex Sans Thai';
+    font-style: normal;
+    font-weight: 400;
+    src: url('assets/fonts/IBMPlexSansThai-Regular.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'IBM Plex Sans Thai';
+    font-style: normal;
+    font-weight: 700;
+    src: url('assets/fonts/IBMPlexSansThai-Bold.ttf') format('truetype');
+}
+
+@font-face {
+    font-family: 'IBM Plex Sans Thai';
+    font-style: normal;
+    font-weight: 900;
+    src: url('assets/fonts/IBMPlexSansThai-Bold.ttf') format('truetype');
+}
+
+.swal2-container {
+    z-index: 3000 !important;
+}
+
+.swal2-popup {
+    z-index: 3001 !important;
+}
+
+.swal2-backdrop-show,
+.swal2-backdrop {
+    z-index: 2999 !important;
+}
+
+/* styles.css */
+// body {
+//     font-family: "IBM Plex Sans Thai", sans-serif;
+//     font-weight: 400;
+//     font-style: normal;
+// }
+
+// table {
+//     font-family: "IBM Plex Sans Thai", sans-serif;
+//     font-weight: 400;
+//     font-style: normal;
+// }
+
+// textarea {
+//     font-family: "IBM Plex Sans Thai", sans-serif;
+//     font-weight: 200;
+//     font-style: normal;
+// }
+
+// span {
+//     font-family: "IBM Plex Sans Thai", sans-serif;
+//     font-weight: 400;
+//     font-style: normal;
+// }
+
+// input {
+//     font-family: "IBM Plex Sans Thai", sans-serif;
+//     font-weight: 400;
+//     font-style: normal;
+// }
+
+// label {
+//     font-family: "IBM Plex Sans Thai", sans-serif;
+//     font-weight: 400;
+//     font-style: normal;
+// }

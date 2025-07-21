@@ -1,0 +1,181 @@
+<div class="grid">
+    <div class="field col-12">
+        <div class="grid">
+            <div class="col-12">
+                <div class="card">
+                    <span style="font-size: 25px; display: block;">เบิกวัสดุสิ้นเปลือง</span>
+                    <li class="flex align-items-center py-2 px-2 border-top-1 surface-border flex-wrap"></li>
+                    
+                    <div class="py-3">
+                        <p-tabView (onChange)="onTabChange($event.index)">
+                            <p-tabPanel *ngFor="let item of dataWithdrawType" [header]="item.wt_name" [leftIcon]="'pi pi-angle-right'">
+                                <div class="p-fluid p-formgrid grid">
+                                    <div class="field col-12 md:col-6 md:mb-0" *ngIf="item.wt_id === 'ST'">
+                                        <label>แผนกที่ใช้งาน</label>
+                                        <p-dropdown 
+                                            [options]="dataDepart" 
+                                            optionLabel="name" 
+                                            optionValue="id_depart"
+                                            placeholder="-- เลือกแผนก --"
+                                            [showClear]="true"
+                                            [(ngModel)]="selectedDepart" />
+                                    </div>
+                                    <div class="field col-12 md:col-6 md:mb-0" *ngIf="item.wt_id === 'ST'">
+                                        <label>จุดงานที่ซ่อม
+                                            <span class="text-red-small">**ต้องระบุด้วย**</span>
+                                        </label>
+                                        <input type="text" [(ngModel)]="locationUse" pInputText />
+                                    </div>
+                                    <div class="field col-12 md:mb-0" *ngIf="item.wt_id === 'ST'">
+                                        <label>หมายเหตุ/ สถานที่นำไปใช้/ นำไปใช้กับงานอะไร</label>
+                                        <textarea rows="3" cols="30" pInputTextarea [(ngModel)]="remarkReq"></textarea>
+                                    </div>
+                        
+                                    <div class="field col-12 md:col-3 md:mb-0" *ngIf="item.wt_id === 'SP'">
+                                        <label>ประเภทงาน</label>
+                                        <p-dropdown 
+                                            [options]="dataTypeWork" 
+                                            optionLabel="name_tw" 
+                                            optionValue="tw_id"
+                                            placeholder="-- เลือกประเภทงาน --"
+                                            [showClear]="true"
+                                            [(ngModel)]="selectedType"
+                                            (onChange)="onTypework($event.value)" />
+                                    </div>
+                                    <div class="field col-12 md:col-9 md:mb-0" *ngIf="item.wt_id === 'SP'">
+                                        <label>เลขที่ใบแจ้งซ่อม</label>
+                                        <p-dropdown 
+                                            [options]="selectedType ? dataRequest || [] : []" 
+                                            optionLabel="request" 
+                                            optionValue="request_id"
+                                            placeholder="{{ selectedType ? '-- เลือกใบแจ้งซ่อม --' : '-- กรุณาเลือกประเภทงานก่อน --'}}"
+                                            [(ngModel)]="selectedRequestId"
+                                            [filter]="true"
+                                            [showClear]="true"
+                                            [virtualScroll]="true"
+                                            [virtualScrollItemSize]="50" />
+                                    </div>
+                        
+                                    <div class="field col-12" *ngIf="item.wt_id === 'OP'">
+                                        <label>เลขที่ใบแจ้งซ่อม</label>
+                                        <p-dropdown 
+                                            [options]="dataRequestDepart" 
+                                            optionLabel="request" 
+                                            optionValue="request_id"
+                                            placeholder="-- เลือกใบแจ้งซ่อม --"
+                                            [(ngModel)]="selectedRequestIdDepart"
+                                            [filter]="true"
+                                            [showClear]="true"
+                                            [virtualScroll]="true"
+                                            [virtualScrollItemSize]="50" />
+                                    </div>
+                                </div>
+                            </p-tabPanel>
+                        </p-tabView>
+                        <div class="p-fluid p-formgrid grid" *ngIf="status_apr !== 'SA99'">
+                            <div class="field col-12 md:col-6">
+                                <label for="lineApr">เลือกตำแหน่งผู้อนุมัติ</label>
+                                <p-dropdown 
+                                    [options]="dataLineApprove" 
+                                    optionLabel="pp_name" 
+                                    optionValue="pp_id"
+                                    placeholder="-- เลือกตำแหน่งผู้อนุมัติ --"
+                                    [(ngModel)]="selectedLineApr"
+                                    (onChange)="onLineAprChange($event.value)">
+                                </p-dropdown>
+                            </div>
+                            <div class="field col-12 md:col-6">
+                                <label for="approver">เลือกผู้อนุมัติ</label>
+                                <p-dropdown 
+                                    [options]="dataApprover" 
+                                    optionLabel="name_apr" 
+                                    optionValue="idcard_apr"
+                                    placeholder="-- เลือกผู้อนุมัติ --"
+                                    [(ngModel)]="selectedApr">
+                                </p-dropdown>
+                            </div>
+                        </div>
+                          
+                        <div class="p-fluid p-formgrid grid">                          
+                            <div class="field col-12">
+                                <label>เลือกสินค้า
+                                    <span class="text-red-small">* เพิ่มข้อมูลสินค้าต้องกดปุ่ม <u>เพิ่ม</u> เพื่อเพิ่มข้อมูล และกด <u>บันทึกข้อมูล</u> เพื่อทำการบันทึก</span>
+                                </label>
+                                <p-table [value]="tableData" responsiveLayout="scroll">
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                            <th style="width:15%">สต๊อก</th>
+                                            <th>รายการสินค้า</th>
+                                            <th style="width:15%">จำนวนที่ต้องการเบิก</th>
+                                            <th style="width:10%"></th>
+                                        </tr>
+                                    </ng-template>
+                                  
+                                    <ng-template pTemplate="body" let-row let-i="rowIndex">
+                                        <tr>
+                                            <td>{{ row.stock_name }}</td>
+                                            <td>{{ row.display_text }}</td>
+                                            <td>{{ row.quantity }}</td>
+                                            <td>
+                                            <div class="flex justify-content-center flex-wrap gap-2">
+                                                <p-button label="ลบ" severity="danger" [outlined]="true" (click)="removeProductFromTable(i)"></p-button>
+                                            </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                  
+                                    <ng-template pTemplate="footer">
+                                        <tr>
+                                            <td>
+                                                <p-dropdown 
+                                                    [options]="stockData || []" 
+                                                    placeholder="-- เลือกประเภทสต๊อก --" 
+                                                    optionLabel="stock_name" 
+                                                    optionValue="stock_id"
+                                                    [showClear]="true"
+                                                    [(ngModel)]="selectedStock"
+                                                    (onChange)="onStockChange($event.value)"
+                                                    appendTo="body">
+                                                </p-dropdown>
+                                            </td>
+                                            <td>
+                                                <p-dropdown 
+                                                    [options]="selectedStock ? productData || [] : []" 
+                                                    [virtualScroll]="true"
+                                                    [virtualScrollItemSize]="50"
+                                                    placeholder="{{ selectedStock ? '-- เลือกสินค้า --' : '-- กรุณาเลือกประเภทสต๊อกก่อน --'}}"
+                                                    optionLabel="display_text" 
+                                                    optionValue="product_id"
+                                                    [showClear]="true"
+                                                    [filter]="true"
+                                                    [(ngModel)]="selectedProduct"
+                                                    appendTo="body">
+                                                </p-dropdown>
+                                            </td>
+                                            <td>
+                                                <p-inputNumber 
+                                                    [(ngModel)]="quantity" 
+                                                    mode="decimal"
+                                                    inputId="minmax-buttons" 
+                                                    [min]="0" 
+                                                    [max]="100" />
+                                            </td>
+                                            <td>
+                                                <div class="flex justify-content-center flex-wrap gap-2">
+                                                    <p-button label="เพิ่ม" [outlined]="true" (click)="addProductToTable()"></p-button>
+                                                </div>
+                                            </td>
+                                        </tr>                                          
+                                    </ng-template>
+                                </p-table>                                  
+                            </div>
+                        </div>                                                                                     
+                        <div class="flex flex-wrap gap-3 justify-content-end" >                          
+                            <p-button class="custom-button" label="บันทึกข้อมูล" (onClick)="saveButton()" [raised]="true" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

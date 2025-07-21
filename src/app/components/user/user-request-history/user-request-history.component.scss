@@ -1,0 +1,23 @@
+::ng-deep .p-tabview-nav li {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+::ng-deep .p-tabview-nav li .p-tabview-title {
+    color: #333;
+}
+
+.field {
+    width: 300px; /* ตั้งค่าความกว้างสำหรับ dropdown และ calendar */
+}
+
+::ng-deep .p-dropdown,
+::ng-deep .p-calendar {
+  width: 100% !important; /* ขยายให้ใช้เต็มพื้นที่ */
+}
+
+::ng-deep .p-datepicker .p-datepicker-other-month {
+    color: #818697 !important; /* สีแดงส้ม */
+    font-weight: bold; /* ทำให้ตัวหนา */
+    opacity: 0.6; /* ให้สีจางลง */
+}

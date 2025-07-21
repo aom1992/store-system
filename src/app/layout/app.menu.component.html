@@ -1,0 +1,7 @@
+<ul class="layout-menu">
+    <ng-container *ngFor="let item of model; let i = index;">
+        <li app-menuitem *ngIf="!item.separator" [item]="item" [index]="i" [root]="true"></li>
+        <li *ngIf="item.separator" class="menu-separator"></li>
+        <li class="flex align-items-center py-2 px-2 border-top-1 surface-border flex-wrap"></li>
+    </ng-container>        
+</ul>

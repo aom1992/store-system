@@ -1,0 +1,151 @@
+<div class="grid">
+	<div class="col-12">
+		<div class="card">
+            <span style="font-size: 15px; display: block; color: #0e6e13;">> {{this.menuLabel}}</span>
+			<span style="font-size: 25px; display: block;">รับเข้า/เติมสินค้า (IMPORT DATA STOCK B)</span>
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>
+
+            <div class="p-fluid mt-2">
+                <div class="p-fluid p-formgrid grid">
+                    <div class="field col-12 md:col-4 md:mb-0">
+                        <label>วันที่อัพเดทข้อมูล</label>
+                        <p-calendar 
+                            [(ngModel)]="date" 
+                            [iconDisplay]="'input'" 
+                            [showIcon]="true"
+                            [disabled]="true"
+                            dateFormat="dd/mm/yy" />
+                    </div>
+                    <div class="field col-12 md:col-4 md:mb-0">
+                        <label>วันที่รับสินค้า</label>
+                        <p-calendar 
+                            [(ngModel)]="dateReceived" 
+                            [iconDisplay]="'input'" 
+                            [showIcon]="true"
+                            dateFormat="dd/mm/yy" />
+                    </div>
+                    <div class="field col-12 md:col-4 md:mb-0">
+                        <label>เลขที่ PO/เลขที่บิลเงินสด</label>
+                        <input
+                            type="text"
+                            pInputText
+                            [(ngModel)]="poNumber"
+                        />
+                    </div>
+                    <div class="field col-12 md:col-8 md:mb-0">
+                        <label>เลขที่ใบแจ้งซ่อม</label>
+                        <p-dropdown 
+                            [options]="dataRequestDepart" 
+                            optionLabel="request" 
+                            optionValue="request_id"
+                            placeholder="-- เลือกใบแจ้งซ่อม --"
+                            [(ngModel)]="selectedRequestIdDepart"
+                            [filter]="true"
+                            filterBy="request"
+                            [showClear]="true"
+                            [virtualScroll]="true"
+                            [virtualScrollItemSize]="50" />
+                    </div>
+                    <div class="field col-12 md:col-4 md:mb-0">
+                        <label>ผู้สั่งซื้อ</label>
+                        <p-dropdown 
+                            [options]="empData"
+                            placeholder="-- เลือกผู้สั่งซื้อ --" 
+                            optionLabel="full_name" 
+                            optionValue="idcard_emp"
+                            [filter]="true"
+                            filterBy="full_name"
+                            [showClear]="true"
+                            [(ngModel)]="empRequest"
+                        />
+                    </div>
+                </div>
+
+                <div class="p-fluid p-formgrid grid mt-2">                          
+                    <div class="field col-12">
+                        <label>เลือกสินค้า
+                            <span class="text-red-small">* ต้องกดปุ่ม <u>เพิ่ม</u> เพื่อเพิ่มข้อมูล และกด <u>บันทึกข้อมูล</u> เพื่อทำการบันทึก</span>
+                        </label>
+                        <table>
+                            <tr>
+                                <th style="width:15%">กลุ่มสินค้า</th>
+                                <th>เลขสินค้า</th>
+                                <th>รายการสินค้า</th>
+                                <th>จำนวนรับเข้า</th>
+                                <th>หน่วย</th>
+                                <th></th>
+                            </tr>
+                            <tr *ngFor="let row of tableData; let i = index">
+                                <td>{{ row.product_group }}</td>
+                                <td>{{ row.product_number }}</td>
+                                <td>{{ row.product_detail }}</td>
+                                <td>{{ row.quantity }}</td>
+                                <td>{{ row.unit }}</td>
+                                <td>
+                                    <div class="flex justify-content-center flex-wrap gap-2">
+                                        <p-button label="ลบ" severity="danger" [outlined]="true" (click)="removeProductFromTable(i)"></p-button>
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <p-dropdown 
+                                        [options]="productGroupData || []" 
+                                        placeholder="-- เลือกกลุ่มสินค้า --" 
+                                        optionLabel="pg_name" 
+                                        optionValue="pg_id"
+                                        [showClear]="true"
+                                        [(ngModel)]="selectedProductGroup">
+                                    </p-dropdown>
+                                </td>
+                                <td>
+                                    <input
+                                        type="text"
+                                        pInputText
+                                        [(ngModel)]="productNumber"
+                                    />
+                                </td>
+                                <td>
+                                    <input
+                                        type="text"
+                                        pInputText
+                                        [(ngModel)]="productDetail"
+                                    />
+                                </td>
+                                <td>
+                                    <p-inputNumber 
+                                        [(ngModel)]="quantity" 
+                                        mode="decimal"
+                                        [showButtons]="true"
+                                        inputId="minmax-buttons" 
+                                        [min]="0" 
+                                        [max]="100" />
+                                </td>
+                                <td>
+                                    <p-dropdown 
+                                        [options]="unitData || []" 
+                                        placeholder="-- เลือกหน่วยนับ --" 
+                                        optionLabel="pu_name"
+                                        optionValue="pu_id"
+                                        [showClear]="true"
+                                        [filter]="true"
+                                        filterBy="pu_name"
+                                        [(ngModel)]="selectedUnit">
+                                    </p-dropdown>
+                                </td>
+                                <td>
+                                    <div class="flex justify-content-center flex-wrap gap-2">
+                                        <p-button label="เพิ่ม" [outlined]="true" (click)="addProductToTable()"></p-button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>                                                                                     
+                <div class="flex flex-wrap gap-3 justify-content-end" >                          
+                    <p-button class="custom-button" label="บันทึกข้อมูล" (onClick)="saveButton()" [raised]="true" />
+                </div>
+            </div>       
+        </div>
+    </div>
+</div>

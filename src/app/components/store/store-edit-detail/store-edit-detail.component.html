@@ -1,0 +1,233 @@
+<div class="grid">
+	<div class="col-12">
+		<div class="card">
+			<span style="font-size: 15px; display: block; color: #0e6e13;">> {{this.menuLabel}}</span>
+            <span style="font-size: 25px; display: block;">รายละเอียดการเบิกสินค้า</span>
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>
+
+            <div class="p-fluid mt-2">
+                <p-tabMenu 
+                    [model]="tabs"
+                    [(activeItem)]="selectedTab"
+                    class="my-tabmenu">
+                </p-tabMenu>
+
+                <div *ngIf="selectedTab.id === 'tab1'" class="tab-content py-3">
+                    <div class="p-fluid p-formgrid grid">
+                        <div class="field col-12 md:col-4 md:mb-0">
+                            <label>วันที่เบิก</label>
+                            <input
+                                type="text"
+                                pInputText
+                                [readonly]="true"
+                                [value]="detailData[0]?.date_input"
+                            />
+                        </div>
+                        <div class="field col-12 md:col-4 md:mb-0">
+                            <label>ผู้เบิก</label>
+                                <input
+                                    type="text"
+                                    pInputText
+                                    [readonly]="true"
+                                    [value]="detailData[0]?.full_name"
+                                />
+                        </div>
+                        <div class="field col-12 md:col-4 md:mb-0">
+                            <label>ประเภทการเบิก</label>
+                                <input
+                                    type="text"
+                                    pInputText
+                                    [readonly]="true"
+                                    [value]="detailData[0]?.wt_name"
+                                />
+                        </div>
+                        <div class="field col-12 md:col-4 md:mb-0">
+                            <label>เลขที่ขอเบิก</label>
+                                <input
+                                    type="text"
+                                    pInputText
+                                    [readonly]="true"
+                                    [value]="detailData[0]?.pw_id"
+                                />
+                        </div>
+                        <div class="field col-12 md:col-4 md:mb-0">
+                            <label>เลขที่ใบเบิก</label>
+                                <input
+                                    type="text"
+                                    pInputText
+                                    [readonly]="true"
+                                    [value]="detailData[0]?.withdraw_id || detailData[1]?.withdraw_id || 'NO 000'"
+                                />
+                        </div>
+                        <div class="field col-12 md:col-4 md:mb-0">
+                            <label>เลขที่ใบแจ้งซ่อม</label>
+                                <input
+                                    type="text"
+                                    pInputText
+                                    [readonly]="true"
+                                    [value]="detailData[0]?.request_id || '-'"
+                                />
+                        </div>
+                        <div class="field col-12 md:mb-0">
+                            <label>รายการสินค้า</label>
+                            <p-table 
+                                [value]="detailData" 
+                                responsiveLayout="scroll" 
+                                styleClass="p-datatable-gridlines"
+                            >
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th class="text-center">รหัสสินค้า</th>
+                                        <th class="text-center">รายการ</th>
+                                        <th class="text-center">ขอเบิก</th>
+                                        <th class="text-center">เบิกแล้ว</th>
+                                        <th class="text-center">หน่วย</th>
+                                        <th class="text-center">ผู้เบิก</th>
+                                        <th class="text-center">แผนกที่ใช้งาน</th>
+                                        <th class="text-center">จุดซ่อม</th>
+                                        <th class="text-center">สถานะ</th>
+                                        <th class="text-center">
+                                            <i class="pi pi-search"></i>
+                                        </th>
+                                    </tr>
+                                </ng-template>
+                            
+                                <ng-template pTemplate="body" let-data>
+                                    <tr>
+                                        <td class="text-center">{{data.product_id}}</td>
+                                        <td>{{data.product_detail}}</td>
+                                        <td class="text-center">{{data.request_qty || 0}}</td>
+                                        <td class="text-center">{{data.withdraw_qty || 0}}</td>
+                                        <td class="text-center">{{data.pu_name}}</td>
+                                        <td class="text-center">{{data.full_name2 || '-'}}</td>
+                                        <td class="text-center">{{data.name || '-'}}</td>
+                                        <td class="text-center">{{data.location_use || '-'}}</td>
+                                        <td class="text-center">
+                                            <span [ngStyle]="{
+                                                    'background-color': getBackgroundColor(data.color), 
+                                                    'color': getTextColor(getBackgroundColor(data.color)), 
+                                                    'padding': '5px', 
+                                                    'border-radius': '5px'
+                                                }">
+                                                {{data.name_status}}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="flex flex-wrap gap-2 justify-content-center">
+                                                <p-button 
+                                                    label="ลบ"
+                                                    (onClick)="deleteProduct(data.pw_id, data.product_id, data.request_qty, data.stock_id)" 
+                                                    severity="danger" 
+                                                    pTooltip="ลบถาวร">
+                                                </p-button>
+                                                <p-button 
+                                                    label="Edit"
+                                                    (onClick)="editProduct(data)"
+                                                    severity="warning">
+                                                </p-button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>                                                        
+                        </div>
+                        <div class="field col-12 md:mb-0">
+                            <label>หมายเหตุ/ สถานที่นำไปใช้/ นำไปใช้กับงานอะไร</label>
+                            <textarea 
+                                rows="3"
+                                cols="30"
+                                pInputTextarea
+                                [readonly]="true"
+                                [value]="detailData[0]?.remark_req || '-'">
+                            </textarea>
+                        </div>
+                    </div>
+                </div>              
+                <div *ngIf="selectedTab.id === 'tab2'" class="tab-content py-3 mb-3">
+                    <p-table 
+                        [value]="statusDetail" 
+                        styleClass="p-datatable-striped p-datatable-gridlines" 
+                        [tableStyle]="{'min-width': '50rem'}">
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th class="text-center">วันที่</th>
+                                    <th class="text-center">สถานะ</th>
+                                    <th class="text-center" style="width: 40%;">รายละเอียด</th>
+                                    <th class="text-center">ผู้บันทึกข้อมูล</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-data>
+                                <tr>
+                                    <td class="text-center">{{data.date_input}}</td>
+                                    <td [ngStyle]="{'text-align': 'center', 'vertical-align': 'middle'}">
+                                        <span [ngStyle]="{
+                                                'background-color': getBackgroundColor(data.color), 
+                                                'color': getTextColor(getBackgroundColor(data.color)), 
+                                                'padding': '5px', 
+                                                'border-radius': '5px'
+                                            }">
+                                            {{data.name_status}}
+                                        </span>                            
+                                    </td>
+                                    <td>{{data.detail}}</td>
+                                    <td>{{data.full_name}}</td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="9">ไม่พบข้อมูล !!</td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="loadingbody">
+                                <tr>
+                                    <td colspan="9">กำลังโหลดข้อมูล....</td>
+                                </tr>
+                            </ng-template>
+                    </p-table>
+                </div>
+            </div>       
+        </div>
+
+        <div class="card" *ngIf="selectedProduct">
+            <div class="p-fluid p-formgrid grid">
+                <div class="field col-12 md:col-4 md:mb-0">
+                    <label>รหัสสินค้า</label>
+                    <input type="text" pInputText [readonly]="true" [(ngModel)]="selectedProduct.product_id" />
+                </div>
+                <div class="field col-12 md:col-8 md:mb-0">
+                    <label>รายการ</label>
+                    <input type="text" pInputText [readonly]="true" [(ngModel)]="selectedProduct.product_detail" />
+                </div>
+                <div class="field col-12 md:col-4 md:mb-0">
+                    <label>จำนวนที่ขอเบิก</label>
+                    <input type="text" pInputText [readonly]="true" [(ngModel)]="selectedProduct.request_qty" />
+                </div>
+                <div class="field col-12 md:col-4 md:mb-0">
+                    <label>จำนวนคงเหลือในสต๊อก</label>
+                    <input type="text" pInputText [readonly]="true" [(ngModel)]="selectedProduct.product_select_mn" />
+                </div>
+                <div class="field col-12 md:col-4 md:mb-0">
+                    <label>จำนวนที่ต้องการคืน</label>
+                    <input type="text" pInputText [(ngModel)]="editQty" />
+                </div>
+                <div class="field col-12 md:col-4 md:mb-0">
+                    <label>แผนกที่ใช้งาน</label>
+                    <p-dropdown 
+                        [options]="dataDepart" 
+                        optionLabel="name" 
+                        optionValue="id_depart"
+                        placeholder="-- เลือกแผนก --"
+                        [showClear]="true"
+                        [(ngModel)]="departUse" />
+                </div>
+                <div class="field col-12 md:col-4 md:mb-0">
+                    <label>จุดซ่อม</label>
+                    <input type="text" pInputText [(ngModel)]="locationUse" />
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-3 justify-content-end">
+                <p-button label="บันทึกการแก้ไข" [raised]="true" severity="success" (onClick)="saveEdit(selectedProduct.product_id, selectedProduct.stock_id)" />
+            </div> 
+        </div>       
+    </div>
+</div>

@@ -1,0 +1,100 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <span style="font-size: 15px; display: block; color: #0e6e13;">> {{this.menuLabel}}</span>
+            <span style="font-size: 25px; display: block;">ประวัติการรับเข้า (STOCK A)</span>
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>
+
+            <p-table 
+                #historyTB
+                [value]="historyData"
+                dataKey="pw_id" 
+                [rows]="20"
+                [rowHover]="true" 
+                styleClass="p-datatable-gridlines p-datatable-striped"
+                stripedRows
+                [paginator]="true"
+                [globalFilterFields]="['full_name', 'date_input']" 
+                responsiveLayout="scroll"
+                [rowsPerPageOptions]="[20, 100, 200]"
+            >
+                <ng-template pTemplate="caption">
+                    <div class="flex justify-content-end flex-column sm:flex-row">
+                        <span class="p-input-icon-left mb-2">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" #filter (input)="onGlobalFilter(historyTB, $event)" placeholder="Search Keyword" class="w-full" id="search"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 5rem;">
+                            <div class="flex justify-content-center align-items-center">
+                                ลำดับ
+                            </div>
+                        </th>
+                        <th pSortableColumn="date_input" style="width: 50%;">
+                            <div class="flex justify-content-between align-items-center">
+                                วันที่รับเข้า
+                                <p-sortIcon field="date_input"></p-sortIcon>
+                            </div>
+                        </th>
+                        <th pSortableColumn="full_name">
+                            <div class="flex justify-content-between align-items-center">
+                                ผู้ทำรายการ
+                                <p-sortIcon field="full_name"></p-sortIcon>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="flex justify-content-center align-items-center">
+                                <i class="pi pi-search" style="color: green"></i>
+                            </div>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-data let-i="rowIndex">
+                    <tr>
+                        <td class="text-center">{{i + 1}}</td>
+                        <td>
+                            รายการรับเข้าประจำวันที่ {{data.date_input}}
+                        </td>
+                        <td>{{data.full_name}}</td>
+                        <td>
+                            <div class="flex flex-wrap gap-3 justify-content-center">
+                                <p-button 
+                                    icon="pi pi-eye" 
+                                    [rounded]="true" 
+                                    [outlined]="true"
+                                    severity="success"
+                                    [routerLink]="['/store-product-detaila', data.date_input]"
+                                    [queryParams]="{ currentMenu: menuLabel2 }"
+                                    pTooltip="ดูรายละเอียด"
+                                    tooltipPosition="top"
+                                ></p-button>
+                                <p-button 
+                                    icon="pi pi-trash" 
+                                    severity="danger" 
+                                    [rounded]="true" 
+                                    [outlined]="true" 
+                                    (onClick)="deleteProduct(data.date_input, data.idcard_input, data.stock_id)" 
+                                    pTooltip="ลบถาวร"
+                                    tooltipPosition="top">
+                                </p-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>                  
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="8">ไม่พบข้อมูล !!</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="loadingbody">
+                    <tr>
+                        <td colspan="8">กำลังโหลดข้อมูล....</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,67 @@
+<div class="grid">
+	<div class="col-12">
+		<div class="card">
+            <span style="font-size: 15px; display: block; color: #0e6e13;">> {{this.menuLabel}}</span>
+			<span style="font-size: 25px; display: block;">รับเข้า/เติมสินค้า (IMPORT DATA STOCK A)</span>
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>
+
+            <div class="p-fluid mt-2">
+                <div class="p-fluid p-formgrid grid">
+                    <div class="field col-12 md:col-4 md:mb-0">
+                        <label>วันที่อัพเดทข้อมูล</label>
+                        <p-calendar 
+                            [(ngModel)]="date" 
+                            [iconDisplay]="'input'" 
+                            [showIcon]="true"
+                            [disabled]="true"
+                            dateFormat="dd/mm/yy" />
+                    </div>
+                    <div class="field col-12 md:col-4 md:mb-0">
+                        <label>Stock Type</label>
+                        <p-dropdown 
+                            [options]="stockData || []" 
+                            placeholder="-- เลือกประเภทสต๊อก --" 
+                            optionLabel="stock_name" 
+                            optionValue="stock_id"
+                            [showClear]="true"
+                            [(ngModel)]="selectedStock"/>
+                    </div>
+                    <div class="field col-12 md:mb-3">
+                        <label class="block font-medium text-lg text-gray-700 mb-2">
+                            เลือกไฟล์อัพโหลด
+                            <span class="text-red-small"> * เฉพาะไฟล์ Excel .xls/.xlsx ตามรูปแบบที่กำหนดเท่านั้น</span>
+                        </label>
+                        
+                        <div class="flex gap-2 items-center">
+                            <p-fileUpload
+                                #fileUpload
+                                name="file" 
+                                accept=".xls,.xlsx"
+                                mode="basic" 
+                                chooseLabel="เลือกไฟล์ Excel" 
+                                class="p-button-outlined p-button-secondary w-auto"
+                                (onSelect)="onFileSelected($event)">
+                            </p-fileUpload>
+                        
+                            <button pButton label="อัปโหลด" 
+                                class="p-button-raised p-button-primary w-auto px-4 py-2 flex items-center gap-2"
+                                (click)="uploadFile()" 
+                                [disabled]="!selectedFile">  
+                                <i class="pi pi-upload text-base"></i> 
+                            </button>
+                        </div>                        
+                    </div>                                   
+                    <div class="field col-12 md:mb-0">
+                        <label>หมายเหตุ</label>
+                        <textarea 
+                            rows="3"
+                            cols="30"
+                            pInputTextarea
+                            [(ngModel)]="remark">
+                        </textarea>
+                    </div>
+                </div>
+            </div>       
+        </div>
+    </div>
+</div>

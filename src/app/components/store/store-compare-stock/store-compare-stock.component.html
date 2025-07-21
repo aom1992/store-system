@@ -1,0 +1,139 @@
+<div class="grid">
+	<div class="col-12">
+		<div class="card">
+            <span style="font-size: 15px; display: block; color: #0e6e13;">> {{this.menuLabel}}</span>
+			<span style="font-size: 25px; display: block;">รับเข้า/เติมสินค้า (IMPORT DATA STOCK A)</span>
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>
+
+            <div class="p-fluid mt-2">
+                <div class="p-fluid p-formgrid grid">                    
+                    <div class="field col-12 md:mb-3">
+                        <label class="block font-medium text-lg text-gray-700 mb-2">
+                            เลือกไฟล์อัพโหลด
+                            <span class="text-red-small"> * เฉพาะไฟล์ Excel .xls/.xlsx ตามรูปแบบที่กำหนดเท่านั้น</span>
+                        </label>
+                        
+                        <div class="flex gap-2 items-center">
+                            <p-fileUpload
+                                #fileUpload
+                                name="file" 
+                                accept=".xls,.xlsx"
+                                mode="basic" 
+                                chooseLabel="เลือกไฟล์ Excel" 
+                                class="p-button-outlined p-button-secondary w-auto"
+                                (onSelect)="onFileSelected($event)">
+                            </p-fileUpload>
+                        
+                            <button pButton label="อัปโหลด" 
+                                class="p-button-raised p-button-primary w-auto px-4 py-2 flex items-center gap-2"
+                                (click)="uploadFile()" 
+                                [disabled]="!selectedFile">  
+                                <i class="pi pi-upload text-base"></i> 
+                            </button>
+                        </div>                        
+                    </div>
+                </div>
+            </div>       
+        </div>
+
+        <div class="card">           
+            <div class="p-fluid mt-2">
+                <div class="p-fluid p-formgrid grid">                    
+                    <div class="field col-12 md:mb-3">
+                        <label class="block font-medium text-lg text-gray-700 mb-2">
+                            รายการเช็คสต๊อกคงเหลือ
+                        </label>
+                        
+                        <div class="p-fluid p-formgrid grid mt-2">
+                            <div class="field col-12 md:mb-0">
+                                <p-table 
+                                    #historyTB
+                                    [value]="stockData"
+                                    dataKey="product_id" 
+                                    [rows]="10"
+                                    [rowHover]="true"
+                                    [paginator]="true"
+                                    responsiveLayout="scroll"
+                                    [rowsPerPageOptions]="[10, 50, 100]" 
+                                    styleClass="p-datatable-gridlines p-datatable-striped"
+                                    [globalFilterFields]="['product_id', 'date_received', 'pg_id', 'product_detail', 'pu_name', 'product_remain', 'product_select_mn']"
+                                >
+                                    <ng-template pTemplate="caption">
+                                        <div class="flex justify-content-end flex-column sm:flex-row">
+                                            <span class="p-input-icon-left mb-2">
+                                                <i class="pi pi-search"></i>
+                                                <input pInputText type="text" #filter 
+                                                    (input)="onGlobalFilter(historyTB, $event)" 
+                                                    placeholder="Search Keyword" class="w-full" 
+                                                    id="search"/>
+                                            </span>
+                                        </div>
+                                    </ng-template>
+                                    <ng-template pTemplate="header">
+                                        <tr>
+                                        <th style="width: 5%;">
+                                            <div class="flex justify-content-center align-items-center">
+                                                ลำดับ
+                                            </div>
+                                        </th>
+                                        <th pSortableColumn="product_id">
+                                            <div class="flex justify-content-between align-items-center">
+                                                รหัสสินค้า
+                                                <p-sortIcon field="product_id"></p-sortIcon>
+                                            </div>
+                                        </th>
+                                        <th pSortableColumn="product_detail">
+                                            <div class="flex justify-content-between align-items-center">
+                                                รายละเอียด
+                                                <p-sortIcon field="product_detail"></p-sortIcon>
+                                            </div>
+                                        </th>
+                                        <th pSortableColumn="product_remain_excel">
+                                            <div class="flex justify-content-between align-items-center">
+                                                MAC5
+                                                <p-sortIcon field="product_remain_excel"></p-sortIcon>
+                                            </div>
+                                        </th>
+                                        <th pSortableColumn="product_remain_db">
+                                            <div class="flex justify-content-between align-items-center">
+                                                ONLINE
+                                                <p-sortIcon field="product_remain_db"></p-sortIcon>
+                                            </div>
+                                        </th>
+                                        <th pSortableColumn="pu_name">
+                                            <div class="flex justify-content-center align-items-center">
+                                                หน่วย
+                                                <p-sortIcon field="pu_name"></p-sortIcon>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-data let-i="rowIndex">
+                                        <tr>
+                                            <td class="text-center">{{i + 1}}</td>
+                                            <td class="text-center">{{data.product_id}}</td>
+                                            <td>{{data.product_detail}}</td>
+                                            <td>{{data.product_remain_excel}}</td>
+                                            <td>{{data.product_remain_db}}</td>
+                                            <td>{{data.pu_name}}</td>
+                                        </tr>
+                                    </ng-template>                  
+                                    <ng-template pTemplate="emptymessage">
+                                        <tr>
+                                            <td colspan="6">ไม่พบข้อมูล !!</td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="loadingbody">
+                                        <tr>
+                                            <td colspan="6">กำลังโหลดข้อมูล....</td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
+                        </div>                        
+                    </div>
+                </div>
+            </div>       
+        </div>
+    </div>
+</div>

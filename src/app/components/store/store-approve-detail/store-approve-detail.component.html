@@ -1,0 +1,46 @@
+<div class="grid">
+	<div class="col-12 md:col-6">
+		<div class="card card-w-title">
+            <h5 style="font-size: x-large;">รายการอนุมัติเบิกวัสดุสิ้นเปลือง STOCK A/B</h5>
+            <p-panelMenu [model]="items2">
+                <ng-template pTemplate="item" let-item>
+                    <a (click)="navigate(item, $event)" pRipple
+                       class="flex align-items-center px-3 py-2 cursor-pointer">
+                        <i [class]="item.icon + ' text-primary'"></i>
+                        <span class="ml-2">{{ item.label }}</span>
+                        <p-badge *ngIf="item.badge" class="ml-auto" [value]="item.badge" severity="warning"></p-badge>
+                    </a>
+                </ng-template>
+            </p-panelMenu>
+        </div>
+
+		<div class="card card-w-title">
+			<h5 style="font-size: x-large;">แก้ไขข้อมูลการเบิกสินค้า</h5>
+			<p-panelMenu [model]="items3">
+                <ng-template pTemplate="item" let-item>
+                    <a (click)="navigate(item, $event)" pRipple
+                       class="flex align-items-center px-3 py-2 cursor-pointer">
+                        <i [class]="item.icon + ' text-primary'"></i>
+                        <span class="ml-2">{{ item.label }}</span>
+                        <p-badge *ngIf="item.badge" class="ml-auto" [value]="item.badge" severity="warning"></p-badge>
+                    </a>
+                </ng-template>
+            </p-panelMenu>
+		</div>
+	</div>
+	<div class="col-12 md:col-6">
+        <div class="card card-w-title">
+            <h5 style="font-size: x-large;">รายการรอหัวหน้าอนุมัติ</h5>
+            <p-panelMenu [model]="items">
+                <ng-template pTemplate="item" let-item>
+                    <a (click)="navigate(item, $event)" pRipple
+                       class="flex align-items-center px-3 py-2 cursor-pointer">
+                        <i [class]="item.icon + ' text-primary'"></i>
+                        <span class="ml-2">{{ item.label }}</span>
+                        <p-badge *ngIf="item.badge" class="ml-auto" [value]="item.badge" severity="warning"></p-badge>
+                    </a>
+                </ng-template>
+            </p-panelMenu>
+        </div>
+    </div>      
+</div>

@@ -1,0 +1,157 @@
+<div class="grid">
+	<div class="col-12">
+		<div class="card">
+            <span style="font-size: 25px; display: block;">กำหนดสิทธิ์การเข้าใช้งาน</span>
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>          
+            <p-toast />
+
+            <div class="p-fluid p-formgrid grid">
+                <div class="field col-12 md:mb-0">
+                    <p-table 
+                        [value]="body" 
+                        styleClass="p-datatable-striped p-datatable-gridlines" 
+                        [tableStyle]="{'min-width': '50rem'}"
+                        [globalFilterFields]="['0', '1', '2']" 
+                        #dt1 >
+                            <ng-template pTemplate="caption">
+                                <div class="flex justify-content-end flex-column sm:flex-row">
+                                    <span class="p-input-icon-left mb-2">
+                                        <i class="pi pi-search"></i>
+                                        <input 
+                                            pInputText 
+                                            type="text" 
+                                            (input)="dt1.filterGlobal($event.target.value, 'contains')" 
+                                            placeholder="ค้นหาชื่อ-นามสกุล" 
+                                            class="w-full" 
+                                            id="search"/>
+                                    </span>
+                                </div>
+                            </ng-template>
+                            <ng-template pTemplate="header">
+                                <tr>
+                                    <th class="text-center" *ngFor="let headerItem of header">
+                                        {{ headerItem }}
+                                    </th>
+                                    <th class="text-center">
+                                        <i class="fa-regular fa-pen-to-square" style="color: rgb(255, 102, 0); font-size: 2rem;"></i>
+                                    </th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-body>
+                                <tr>
+                                    <td *ngFor="let bodyItem of body" class="text-center">
+                                        <i *ngIf="bodyItem === 'yes'" class="pi pi-check-circle" style="color: green; font-size: 2rem;"></i>
+                                        <i *ngIf="!bodyItem" class="pi pi-times-circle" style="color: red; font-size: 2rem;"></i>
+                                        <span *ngIf="bodyItem !== 'yes' && bodyItem">{{ bodyItem }}</span>
+                                    </td>
+                                    <td>
+                                        <p-button label="Edit" severity="warning" (onClick)="showCancelDialog(body[0])" />
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="8">ไม่พบข้อมูล !!</td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="loadingbody">
+                                <tr>
+                                    <td colspan="8">กำลังโหลดข้อมูล....</td>
+                                </tr>
+                            </ng-template>
+                    </p-table>
+                </div>
+            </div>                   
+        </div>     
+    </div>
+</div>
+
+<div class="flex justify-content-center">
+    <p-dialog 
+        header="แก้ไขสิทธิ์การเข้าใช้งาน" 
+        [modal]="true" 
+        [(visible)]="visible" 
+        [style]="{ width: '95%', 'max-width': '60rem' }"
+        (onHide)="closeDialog()">
+        <span>{{ empid }} : {{user_name}}</span>
+        
+        <div class="flex mt-3">
+            <p-button 
+                icon="pi pi-plus-circle" 
+                label="เพิ่มสิทธิ์เข้าใช้งาน"
+                [raised]="true"
+                (onClick)="onAddPermissionClick()" />
+        </div>
+        <div class="card mt-3" *ngIf="showMenuTable">
+            <div class="mb-2">
+                <span style="font-size: 18px; display: block; color: #0e6e13;">เลือกเมนูที่ต้องการเพิ่มสิทธิ์เข้าใช้งาน</span>
+            </div>           
+            <p-table 
+                [value]="menuData" 
+                [(selection)]="selectedMenu" 
+                dataKey="menu_id"
+                styleClass="p-datatable-striped"
+                [tableStyle]="{'min-width': '50rem'}">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th style="width: 4rem"><p-tableHeaderCheckbox /></th>
+                            <th>MENU</th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-data>
+                        <tr>
+                            <td>
+                                <p-tableCheckbox [value]="data" />
+                            </td>
+                            <td>{{data.sub_topic}}</td>
+                        </tr>
+                    </ng-template>
+            </p-table>
+            <div class="flex justify-content-end mt-3">
+                <p-button label="เพิ่ม" [raised]="true" class="custom-button" (click)="addMenu()" />
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="mb-2">
+                <span style="font-size: 18px; display: block; color: #0e6e13;">เมนูที่มีสิทธิ์เข้าใช้งาน</span>
+            </div>
+            <p-table 
+                [value]="menuAccessData" 
+                styleClass="p-datatable-striped" 
+                [tableStyle]="{'min-width': '50rem'}">
+                    <ng-template pTemplate="header">
+                        <tr>
+                            <th class="text-center">ลำดับ</th>
+                            <th>สิทธิ์เข้าถึงเมนู</th>
+                            <th class="text-center"><i class="pi pi-trash" style="color: red"></i></th>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="body" let-data let-i="rowIndex">
+                        <tr>
+                            <td class="text-center">{{ i + 1 }}</td>
+                            <td>{{data.sub_topic}}</td>
+                            <td class="text-center">
+                                <p-button 
+                                    label="ลบ" 
+                                    [outlined]="true" 
+                                    (onClick)="deleteMenu(data.user_idcard, data.menu_id)"
+                                    severity="danger">
+                                </p-button>
+                            </td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="emptymessage">
+                        <tr>
+                            <td colspan="3">ไม่พบข้อมูล !!</td>
+                        </tr>
+                    </ng-template>
+                    <ng-template pTemplate="loadingbody">
+                        <tr>
+                            <td colspan="3">กำลังโหลดข้อมูล....</td>
+                        </tr>
+                    </ng-template>
+            </p-table>
+        </div>
+    </p-dialog>
+</div>

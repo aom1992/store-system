@@ -1,0 +1,158 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card">
+            <span style="font-size: 30px; display: block;">ประวัติการอนุมัติ</span>
+            <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>
+            <div class="formgroup-inline">
+                <div class="field">
+                    <span>ประเภทการเบิก</span>
+                    <p-dropdown 
+                        [options]="typeData" 
+                        optionLabel="wt_name"
+                        optionValue="wt_id"
+                        [(ngModel)]="selectedType" />
+                </div>
+                <div class="field">
+                    <span>จากวันที่</span>
+                    <p-calendar 
+                        [(ngModel)]="date1" 
+                        dateFormat="dd-mm-yy" 
+                        [iconDisplay]="'input'" 
+                        [showIcon]="true"
+                        [showOtherMonths]="true" 
+                        [selectOtherMonths]="true"></p-calendar>
+                </div>
+                <div class="field">
+                    <span>ถึงวันที่</span>
+                    <p-calendar 
+                        [(ngModel)]="date2" 
+                        dateFormat="dd-mm-yy" 
+                        [iconDisplay]="'input'" 
+                        [showIcon]="true"
+                        [showOtherMonths]="true" 
+                        [selectOtherMonths]="true"></p-calendar>
+                </div>
+                <button class="mt-4" pButton label="ค้นหา" (click)="SearchHistory()"></button>
+            </div>
+        </div>
+
+        <div class="card">
+            <p-table 
+                #historyTB
+                [value]="historyData"
+                dataKey="pw_id" 
+                [rows]="10"
+                [rowHover]="true" 
+                styleClass="p-datatable-gridlines"
+                stripedRows
+                [paginator]="true"
+                [globalFilterFields]="['wt_name', 'withdraw_id', 'full_name', 'date_input', 'product_detail', 'name_status']" 
+                responsiveLayout="scroll"
+                [rowsPerPageOptions]="[5, 10, 20]"
+            >
+                <ng-template pTemplate="caption">
+                    <div class="flex justify-content-end flex-column sm:flex-row">
+                        <span class="p-input-icon-left mb-2">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" #filter (input)="onGlobalFilter(historyTB, $event)" placeholder="Search Keyword" class="w-full" id="search"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th>
+                            <div class="flex justify-content-center align-items-center">
+                                ลำดับ
+                            </div>
+                        </th>
+                        <th pSortableColumn="wt_name">
+                            <div class="flex justify-content-between align-items-center">
+                                ประเภทการเบิก
+                                <p-sortIcon field="wt_name"></p-sortIcon>
+                            </div>
+                        </th>
+                        <th pSortableColumn="withdraw_id">
+                            <div class="flex justify-content-between align-items-center">
+                                รหัสการเบิก
+                                <p-sortIcon field="withdraw_id"></p-sortIcon>
+                            </div>
+                        </th>
+                        <th pSortableColumn="full_name">
+                            <div class="flex justify-content-between align-items-center">
+                                ผู้เบิก
+                                <p-sortIcon field="full_name"></p-sortIcon>
+                            </div>
+                        </th>
+                        <th pSortableColumn="date_input">
+                            <div class="flex justify-content-between align-items-center">
+                                วันที่เบิก
+                                <p-sortIcon field="date_input"></p-sortIcon>
+                            </div>
+                        </th>
+                        <th pSortableColumn="product_detail" style="width: 40rem;">
+                            <div class="flex justify-content-between align-items-center">
+                                รายการสินค้า
+                                <p-sortIcon field="product_detail"></p-sortIcon>
+                            </div>
+                        </th>
+                        <th pSortableColumn="name_status" style="width: 10rem;">
+                            <div class="flex justify-content-between align-items-center">
+                                สถานะ
+                                <p-sortIcon field="name_status"></p-sortIcon>
+                            </div>
+                        </th>
+                        <th>
+                            <div class="flex justify-content-center align-items-center">
+                                Viwe
+                            </div>
+                        </th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-data let-i="rowIndex">
+                    <tr>
+                        <td class="text-center">{{i + 1}}</td>
+                        <td>{{data.wt_name}}</td>
+                        <td>{{data.withdraw_id || 'NO 000'}}</td>
+                        <td>{{data.full_name}}</td>
+                        <td>{{data.date_input}}</td>
+                        <td>{{data.product_detail}}</td>
+                        <td [ngStyle]="{'text-align': 'center', 'vertical-align': 'middle'}">
+                            <span [ngStyle]="{
+                                    'background-color': getBackgroundColor(data.color), 
+                                    'color': getTextColor(getBackgroundColor(data.color)), 
+                                    'padding': '5px', 
+                                    'border-radius': '5px'
+                                }">
+                                {{data.name_status}}
+                            </span>                            
+                        </td>
+                        <td>
+                            <div class="flex flex-wrap gap-2 justify-content-center">
+                                <p-button 
+                                    icon="pi pi-eye"
+                                    [rounded]="true" 
+                                    severity="success" 
+                                    [outlined]="true"
+                                    pTooltip="อนุมัติ"
+                                    tooltipPosition="top"
+                                    [routerLink]="['/user-withdrawal-detail', data.pw_id]"
+                                    [queryParams]="{ currentMenu: menuLabel }"
+                                ></p-button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>                  
+                <ng-template pTemplate="emptymessage">
+                    <tr>
+                        <td colspan="8">ไม่พบข้อมูล !!</td>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="loadingbody">
+                    <tr>
+                        <td colspan="8">กำลังโหลดข้อมูล....</td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,57 @@
+<div class="layout-topbar" style="background-color: rgb(208, 248, 207);">
+    <a class="layout-topbar-logo" routerLink="user-request">
+        <img src="assets/layout/images/Logo-Store.png" alt="logo">
+        <span>STORE SYSTEM</span>
+    </a>
+
+    <button #menubutton class="p-link layout-menu-button layout-topbar-button" (click)="layoutService.onMenuToggle()">
+        <i class="pi pi-bars" style="font-size: 1.5rem"></i>
+    </button>
+
+    <button #topbarmenubutton class="p-link layout-topbar-menu-button layout-topbar-button" (click)="layoutService.showProfileSidebar()">
+        <i class="pi pi-ellipsis-v" style="font-size: 1.5rem"></i>
+    </button>
+
+    <div #topbarmenu class="layout-topbar-menu" [ngClass]="{'layout-topbar-menu-mobile-active': layoutService.state.profileSidebarVisible}">
+        <!-- <button class="p-link layout-topbar-button">
+            <i class="pi pi-calendar"></i>
+            <span>ระบบลางาน</span>
+        </button> -->
+        <button class="p-link layout-topbar-button" (click)="redirectToQuotationSystem()">
+            <i class="pi pi-dollar"></i>
+            <div class="badge-wrapper">
+                <span>ระบบขอราคาสินค้า</span>
+                <p-badge
+                    *ngIf="totalQuoteCount > 0"
+                    [value]="totalQuoteCount"
+                    severity="danger"
+                    class="badge-on-button"
+                ></p-badge>
+            </div>
+        </button>
+        <button class="p-link layout-topbar-button" (click)="redirectToRepairSystem()">
+            <i class="pi pi-wrench"></i>
+            <div class="badge-wrapper">
+                <span>ระบบแจ้งซ่อมบำรุง</span>
+                <p-badge
+                    *ngIf="totalRepairCount > 0"
+                    [value]="totalRepairCount"
+                    severity="danger"
+                    class="badge-on-button"
+                ></p-badge>
+            </div>
+        </button>
+        <!-- <button class="p-link layout-topbar-button">
+            <i class="pi pi-table"></i>
+            <span>ระบบตารางกะ/OT</span>
+        </button>
+        <button class="p-link layout-topbar-button">
+            <i class="pi pi-sync"></i>
+            <span>ระบบยืม - คืน</span>
+        </button> -->
+        <button class="p-link layout-topbar-button logout-btn" (click)="logOut()">
+            <i class="pi pi-sign-out"></i>
+            <span>ออกจากระบบ</span>
+        </button>
+    </div>
+</div>
