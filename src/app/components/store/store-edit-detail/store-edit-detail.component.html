@@ -85,9 +85,9 @@
                                         <th class="text-center">ผู้เบิก</th>
                                         <th class="text-center">แผนกที่ใช้งาน</th>
                                         <th class="text-center">จุดซ่อม</th>
-                                        <th class="text-center">สถานะ</th>
+                                        <th class="text-center" style="width: 8rem;">สถานะ</th>
                                         <th class="text-center">
-                                            <i class="pi pi-search"></i>
+                                            <i class="pi pi-search" style="width: 10rem;"></i>
                                         </th>
                                     </tr>
                                 </ng-template>
@@ -99,9 +99,9 @@
                                         <td class="text-center">{{data.request_qty || 0}}</td>
                                         <td class="text-center">{{data.withdraw_qty || 0}}</td>
                                         <td class="text-center">{{data.pu_name}}</td>
-                                        <td class="text-center">{{data.full_name2 || '-'}}</td>
-                                        <td class="text-center">{{data.name || '-'}}</td>
-                                        <td class="text-center">{{data.location_use || '-'}}</td>
+                                        <td>{{data.full_name2 || '-'}}</td>
+                                        <td>{{data.name || '-'}}</td>
+                                        <td>{{data.location_use || '-'}}</td>
                                         <td class="text-center">
                                             <span [ngStyle]="{
                                                     'background-color': getBackgroundColor(data.color), 
@@ -121,7 +121,7 @@
                                                     pTooltip="ลบถาวร">
                                                 </p-button>
                                                 <p-button 
-                                                    label="Edit"
+                                                    label="แก้ไข"
                                                     (onClick)="editProduct(data)"
                                                     severity="warning">
                                                 </p-button>
@@ -188,7 +188,7 @@
             </div>       
         </div>
 
-        <div class="card" *ngIf="selectedProduct">
+        <div class="card" *ngIf="selectedProduct" #editSection>
             <div class="p-fluid p-formgrid grid">
                 <div class="field col-12 md:col-4 md:mb-0">
                     <label>รหัสสินค้า</label>

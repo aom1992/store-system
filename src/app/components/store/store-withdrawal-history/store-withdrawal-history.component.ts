@@ -167,10 +167,10 @@ export class StoreWithdrawalHistoryComponent {
           console.error('Failed to open new tab for the PDF');
         }
 
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = fileName;
-        a.click();
+        // const a = document.createElement('a');
+        // a.href = url;
+        // a.download = fileName;
+        // a.click();
 
         window.URL.revokeObjectURL(url);
       },

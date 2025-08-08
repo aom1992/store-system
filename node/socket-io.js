@@ -6,8 +6,8 @@ let io;
 function initializeSocketIO(server) {
     io = new Server(server, {
         cors: {
-            // origin: 'https://www.apkgreen.co.th/'
-            origin: 'http://localhost',
+            origin: 'https://www.apkgreen.co.th/',
+            // origin: 'http://localhost',
             methods: ['GET', 'POST'],
             credentials: true,
         },

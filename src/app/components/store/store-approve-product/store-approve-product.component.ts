@@ -267,6 +267,30 @@ export class StoreApproveProductComponent implements OnInit {
   //   });
   // }
 
+  printPDF(pw_id: string) {
+    const fileName = `ใบเบิก_${pw_id}.pdf`;
+    this.rest.getPDF(pw_id).subscribe({
+      next: (blob: Blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const newTab = window.open(url, '_blank');
+        if (newTab) {
+          newTab.document.title = fileName;
+          newTab.focus();
+        } else {
+          console.error('Failed to open new tab for the PDF');
+        }
+
+        window.URL.revokeObjectURL(url);
+      },
+      error: (error) => {
+        console.error('Error while generating PDF:', error);
+      },
+      complete: () => {
+        console.log('PDF generation complete.');
+      }
+    });
+  }  
+
   onCheckboxChange() {
     this.selectAll = this.detailData.every(data => data.selected);
   }

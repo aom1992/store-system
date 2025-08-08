@@ -2,7 +2,7 @@
 	<div class="col-12">
 		<div class="card">
             <span style="font-size: 15px; display: block; color: #0e6e13;">> {{this.menuLabel}}</span>
-			<span style="font-size: 25px; display: block;">รับเข้า/เติมสินค้า (IMPORT DATA STOCK A)</span>
+			<span style="font-size: 25px; display: block;">เทียบ STOCK MAC5 || ONLINE</span>
             <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>
 
             <div class="p-fluid mt-2">
@@ -61,10 +61,10 @@
                                     <ng-template pTemplate="caption">
                                         <div class="flex justify-content-end flex-column sm:flex-row">
                                             <span class="p-input-icon-left mb-2">
-                                                <i class="pi pi-search"></i>
+                                                <i class="pi pi-search" style="font-size: 1.2rem;"></i>
                                                 <input pInputText type="text" #filter 
                                                     (input)="onGlobalFilter(historyTB, $event)" 
-                                                    placeholder="Search Keyword" class="w-full" 
+                                                    placeholder="ค้นหา..."
                                                     id="search"/>
                                             </span>
                                         </div>

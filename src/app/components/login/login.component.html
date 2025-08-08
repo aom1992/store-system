@@ -1,26 +1,58 @@
-<div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden" 
-    style="background-image: url('assets/layout/images/login-bg.jpg'); background-size: cover; background-position: center;">
-    <div class="flex flex-column align-items-center justify-content-center">
-        <div style="border-radius:56px; padding:0.3rem; background: linear-gradient(180deg, #059606 10%, rgba(33, 150, 243, 0) 30%);">
+<div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden position-relative">
+    
+    <!-- Overlay image -->
+    <div 
+        class="background-overlay"
+        style="
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-image: url('assets/layout/images/store_bg.jpg');
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+        ">
+    </div>
+
+    <!-- Overlay color (ทึบขึ้น) -->
+    <div 
+        class="background-color"
+        style="
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background-color: rgba(248, 255, 255, 0.568); /* สีดำแบบจาง */
+            z-index: 2;
+        ">
+    </div>
+
+    <!-- เนื้อหา -->
+    <div class="flex flex-column align-items-center justify-content-center" style="position: relative; z-index: 3;">
+        <div style="border-radius:56px; padding:0.3rem; background: linear-gradient(180deg, #0dc007 10%, rgba(33, 150, 243, 0) 30%);">
             <div class="w-full surface-card py-5 px-5 sm:px-8" style="border-radius:53px">
                 <div class="text-center mt-5 mb-5">
-                    <h2>LOGIN TO INTRANET</h2>
-                </div>
+                    <h2>
+                        <img src="assets/layout/images/Logo-Store.png" 
+                             alt="Logo Icon" 
+                             style="height: 40px; vertical-align: middle; margin-right: 10px;">
+                        ระบบเบิกวัสดุสิ้นเปลือง
+                    </h2>
+                </div>                
 
                 <div *ngIf="loginFailed" class="alert alert-danger mt-3 red-text text-center mb-5" role="alert">
                     {{ errorMessage }}
                 </div>
 
                 <div>
-                    <label for="username" class="block text-900 text-xl font-medium mb-2">Username</label>
+                    <label for="username" class="block text-900 text-xl font-medium mb-2">ชื่อผู้ใช้งาน</label>
                     <input id="username" type="text" placeholder="Username" pInputText class="w-full mb-5" 
                         style="padding:1rem" [(ngModel)]="username" (keydown.enter)="login()">
 
-                    <label for="password" class="block text-900 font-medium text-xl mb-2">Password</label>
+                    <label for="password" class="block text-900 font-medium text-xl mb-2">รหัสผ่าน</label>
                     <input id="password" type="password" placeholder="Password" pInputText class="w-full mb-5" 
                         style="padding:1rem" [(ngModel)]="password" (keydown.enter)="login()">
                     
-                    <button pButton pRipple label="Login" class="w-full text-xl mb-2 p-button-success" 
+                    <button pButton pRipple label="เข้าสู่ระบบ" class="w-full text-xl mb-2 p-button-success" 
                         style="padding:1rem" (click)="login()"></button>
                 </div>
             </div>

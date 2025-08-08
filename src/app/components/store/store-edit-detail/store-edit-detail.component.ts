@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { timeout } from 'rxjs';
 import { RestService } from 'src/app/service/rest.service';
@@ -14,6 +14,7 @@ import { MessageService } from 'primeng/api';
   providers: [MessageService]
 })
 export class StoreEditDetailComponent implements OnInit {
+  @ViewChild('editSection', { static: false }) editSection!: ElementRef;
   menuLabel: string | null = null;
   pw_id: string | null = null;
   tabs: { label: string, icon: string, id: string }[] = [];
@@ -37,7 +38,8 @@ export class StoreEditDetailComponent implements OnInit {
     private rest: RestService,
     private auth: AuthService,
     private alert: AlertService,
-    public messageService: MessageService
+    public messageService: MessageService,
+    private cdr: ChangeDetectorRef
   ) {
     this.tabs = [
       { label: 'รายละเอียดการเบิก', icon: 'pi pi-chevron-right', id: 'tab1' },
@@ -119,6 +121,10 @@ export class StoreEditDetailComponent implements OnInit {
 
   editProduct(product: any) {
     this.selectedProduct = { ...product, edit_qty: product.request_qty };
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.editSection?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   }
 
   saveEdit(product_id: string, stock_id: string) {
@@ -127,13 +133,8 @@ export class StoreEditDetailComponent implements OnInit {
       return;
     }
 
-    if (this.editQty > this.selectedProduct.request_qty) {
+    if (Number(this.editQty) > Number(this.selectedProduct.request_qty)) {
       this.alert.message('แจ้งเตือน', 'จำนวนคืนสินค้าเกินกว่าจำนวนขอเบิก');
-      return;
-    }
-
-    if (this.editQty === this.selectedProduct.request_qty) {
-      this.alert.message('แจ้งเตือน', 'ให้ลบสินค้าแทนการคืนสินค้าทั้งหมด');
       return;
     }
 

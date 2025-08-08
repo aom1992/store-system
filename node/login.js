@@ -5,8 +5,9 @@ const router = express.Router();
 const pool = createConn('emp_green');
 
 async function login(username, password) {
+  let conn;
   try {
-    const conn = await pool.getConnection();
+    conn = await pool.getConnection();
     const query = `
       SELECT 
         CONCAT(TRIM(de.name), ' ', de.lastname) AS name,
@@ -36,16 +37,20 @@ async function login(username, password) {
       return { status: false, message: "ชื่อผู้ใช้งานหรือรหัสผ่านไม่ถูกต้อง !!" };
     }
   } catch (err) {
-    console.log(JSON.stringify(err));
-    throw { status: false, message: "ไม่สามารถเชื่อมต่อฐานข้อมูลได้" };
+    console.log('Database error:', err);
+    return { status: false, message: "ไม่สามารถเชื่อมต่อฐานข้อมูลได้" };
+  } finally {
+    console.log('End Login');
+    if (conn) conn.release(); // ✅ ตรวจสอบก่อน release
   }
 }
+
   
 router.post('/login-green', async (req, res) => {
   const { username, password } = req.body;
   try {
     const result = await login(username, password);
-    if (result.status) {
+    if (result.status && result.doc?.length > 0) {
       const payload = {
         empid: result.doc[0].empid,
         name: result.doc[0].name,
@@ -53,12 +58,12 @@ router.post('/login-green', async (req, res) => {
         depart: result.doc[0].depart,
         id_depart: result.doc[0].id_depart,
         position: result.doc[0].position,
-        sp_id: result.doc[0].sp_id,
         p_id: result.doc[0].p_id,
         pp_id: result.doc[0].pp_id,
         status_apr: result.doc[0].status_apr
       };
       const token = sign(payload);
+      console.log(`/login-green username: ${username}`);
       res.status(200).json({ status: true, token: token, message: "Login สำเร็จ !!" });
     } else {
       res.status(200).json({ status: false, token: "", message: result.message });
@@ -72,7 +77,7 @@ router.post('/login-auto', async (req, res) => {
   const { username, password } = req.body;
   try {
     const result = await login(username, password);
-    if (result.status) {
+    if (result.status && result.doc?.length > 0) {
       const payload = {
         empid: result.doc[0].empid,
         name: result.doc[0].name,
@@ -85,6 +90,7 @@ router.post('/login-auto', async (req, res) => {
         status_apr: result.doc[0].status_apr
       };
       const token = sign(payload);
+      console.log(`/login-green username: ${username}`);
       res.redirect(`https://www.apkgreen.co.th/intranet/store_system/#/login?token=${token}&type=store`);
     } else {
       res.send(`<script>alert("${result.message}"); window.location.href='/'</script>`);

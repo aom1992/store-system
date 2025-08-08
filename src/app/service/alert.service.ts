@@ -38,6 +38,7 @@ export class AlertService {
     let alert = Swal.fire({
         title: title,
         text: mss,
+        icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'ตกลง',
         cancelButtonText: 'ยกเลิก',

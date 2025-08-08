@@ -12,7 +12,6 @@
                         optionLabel="wt_name"
                         optionValue="wt_id"
                         [(ngModel)]="selectedType"
-                        [showClear]="true"
                         placeholder="-- เลือกประเภท --" />
                 </div>
                 <div class="field">
@@ -132,6 +131,7 @@
                                 <p-button 
                                     icon="pi pi-pencil"
                                     [rounded]="true" 
+                                    [outlined]="true"
                                     severity="warning"
                                     pTooltip="Edit"
                                     tooltipPosition="top"
@@ -141,6 +141,7 @@
                                 <p-button 
                                     icon="pi pi-trash" 
                                     [rounded]="true" 
+                                    [outlined]="true"
                                     severity="danger"
                                     pTooltip="ลบ"
                                     tooltipPosition="top"
@@ -150,6 +151,7 @@
                                     *ngIf="data.showPrintButton"
                                     icon="pi pi-print" 
                                     [rounded]="true" 
+                                    [outlined]="true"
                                     severity="success"
                                     pTooltip="ปริ้น"
                                     tooltipPosition="top"

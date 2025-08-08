@@ -67,7 +67,7 @@ const getProductWithdrawData = async (pw_id) => {
 };
 
 const formatThaiDate = (dateStr) => {
-    const [year, month, day] = dateStr.split('-').map(Number);
+    const [day, month, year] = dateStr.split('-').map(Number);  // ✅ ถูกต้องตามลำดับ d-m-Y
     const thaiMonths = [
         'มกราคม', 'กุมภาพันธ์', 'มีนาคม', 'เมษายน', 'พฤษภาคม', 'มิถุนายน',
         'กรกฎาคม', 'สิงหาคม', 'กันยายน', 'ตุลาคม', 'พฤศจิกายน', 'ธันวาคม'
@@ -96,19 +96,72 @@ export const generatePDF = async (pw_id) => {
             const imagePath = path.join(__dirname, 'images', 'APK-Green.png');
             const base64Image = await getBase64Image(imagePath);
 
+            // ====== สร้างแถวของตารางสินค้า ======
+            const productRows = (Array.isArray(productData) && productData.length > 0
+                ? productData.map((item, index) => [
+                    { text: index + 1, alignment: 'center', style: 'cellSmall' },
+                    { text: item?.product_id ?? '-', alignment: 'center', style: 'cellSmall' },
+                    { text: `${item?.product_detail ?? '-'}${item?.request_id ? ` (${item.request_id})` : ''}`, style: 'cellSmall' },
+                    { text: item?.withdraw_qty ?? '-', alignment: 'center', style: 'cellSmall' },
+                    { text: item?.pu_name ?? '-', alignment: 'center', style: 'cellSmall' },
+                    { text: item?.nameinput ?? '-', style: 'cellSmall' },
+                    { text: item?.departinput ?? '-', style: 'cellSmall' },
+                    { text: (item?.wt_id === 'SP' || item?.wt_id === 'OP') ? (item?.depart_machaine ?? '-') : (item?.departuse ?? '-'), alignment: 'center', style: 'cellSmall' },
+                    { text: (item?.wt_id === 'SP' || item?.wt_id === 'OP') ? (item?.mc_id ?? '-') : (item?.location_use ?? '-'), alignment: 'center', style: 'cellSmall' }
+                ])
+                : []
+            );
+
+            // เติมแถวว่างถ้าน้อยกว่า 8 แถว
+            const emptyRows = [];
+            const minRows = 8;
+            if (productRows.length < minRows) {
+                for (let i = productRows.length; i < minRows; i++) {
+                    emptyRows.push([
+                        { text: ' ' },
+                        { text: ' ' },
+                        { text: ' ' },
+                        { text: ' ' },
+                        { text: ' ' },
+                        { text: ' ' },
+                        { text: ' ' },
+                        { text: ' ' },
+                        { text: ' ' }
+                    ]);
+                }
+            }
+
+            // Header ของ table
+            const tableBody = [
+                [
+                    { text: 'ลำดับ', bold: true, alignment: 'center' },
+                    { text: 'รหัส', bold: true, alignment: 'center' },
+                    { text: 'รายการ', bold: true, alignment: 'center' },
+                    { text: 'จำนวน', bold: true, alignment: 'center' },
+                    { text: 'หน่วย', bold: true, alignment: 'center' },
+                    { text: 'ผู้ขอเบิก', bold: true, alignment: 'center' },
+                    { text: 'แผนกผู้ขอเบิก', bold: true, alignment: 'center' },
+                    { text: 'แผนกที่ใช้งาน', bold: true, alignment: 'center' },
+                    { text: 'จุดงานที่ซ่อม', bold: true, alignment: 'center' }
+                ],
+                ...productRows,
+                ...emptyRows
+            ];
+
+            // ========== Document Definition ==========
             const docDefinition = {
-                pageMargins: [40, 20, 40, 40], // ขอบกระดาษ: ซ้าย 40, บน 20, ขวา 40, ล่าง 40
+                pageMargins: [30, 20, 30, 30],
                 content: [
                     { text: `${productData[0]?.withdraw_id}`, style: 'withdrawId' },
                     {
                         table: {
-                            widths: [135, 220, 135],
+                            widths: [140, 226, 140],
                             headerRows: 2,
                             body: [
                                 [
                                     {
                                         rowSpan: 4,
-                                        image: base64Image,  // ใช้ Base64 ที่อ่านมา
+                                        image: base64Image,
                                         width: 125,
                                         height: 56,
                                         alignment: 'center',
@@ -131,13 +184,13 @@ export const generatePDF = async (pw_id) => {
                     },
                     {
                         table: {
-                            widths: [508],
+                            widths: [524],
                             body: [
                                 [
-                                    { 
+                                    {
                                         text: `${productData[0]?.store_date}`,
-                                        border: [true, false, true, false], 
-                                        style: 'subheader' 
+                                        border: [true, false, true, false],
+                                        style: 'subheader'
                                     }
                                 ]
                             ]
@@ -146,72 +199,48 @@ export const generatePDF = async (pw_id) => {
                     {
                         style: 'tableExample',
                         table: {
-                            widths: [20, 48, 97, 25, 25, 56, 59, 53, 53],
-                            body: [
-                                [
-                                    { text: 'ลำดับ', bold: true, alignment: 'center' },
-                                    { text: 'รหัส', bold: true, alignment: 'center' },
-                                    { text: 'รายการ', bold: true, alignment: 'center' },
-                                    { text: 'จำนวน', bold: true, alignment: 'center' },
-                                    { text: 'หน่วย', bold: true, alignment: 'center' },
-                                    { text: 'ผู้ขอเบิก', bold: true, alignment: 'center' },
-                                    { text: 'แผนกผู้ขอเบิก', bold: true, alignment: 'center' },
-                                    { text: 'แผนกที่ใช้งาน', bold: true, alignment: 'center' },
-                                    { text: 'จุดงานที่ซ่อม', bold: true, alignment: 'center' }
-                                ],
-                                ...(Array.isArray(productData) && productData.length > 0 
-                                    ? productData.map((item, index) => [
-                                        { text: index + 1, alignment: 'center' },
-                                        { text: item?.product_id ?? '-', alignment: 'center' },
-                                        { text: `${item?.product_detail ?? '-'}${item?.request_id ? ` (${item.request_id})` : ''}` },
-                                        { text: item?.withdraw_qty ?? '-', alignment: 'center' },
-                                        { text: item?.pu_name ?? '-', alignment: 'center' },
-                                        { text: item?.nameinput ?? '-' },
-                                        { text: item?.departinput ?? '-' },
-                                        { text: (item?.wt_id === 'SP' || item?.wt_id === 'OP') ? (item?.depart_machaine ?? '-') : (item?.departuse ?? '-'), alignment: 'center' },
-                                        { text: (item?.wt_id === 'SP' || item?.wt_id === 'OP') ? (item?.mc_id ?? '-') : (item?.location_use ?? '-'), alignment: 'center' }
-                                    ]) 
-                                    : [[{ text: '-', colSpan: 9, alignment: 'center' }]]
-                                )
-                            ]
+                            widths: [20, 48, 101, 25, 25, 56, 59, 65, 53],
+                            body: tableBody
                         }
                     },
                     {
                         table: {
-                            widths: [163, 163, 164],
+                            widths: [169, 169, 168],
                             body: [
                                 [
-                                    { 
+                                    {
                                         text: `ลงชื่อ ${productData[0]?.namestore} \n(เจ้าหน้าที่)`,
-                                        border: [true, false, false, true], 
-                                        style: 'approved' 
+                                        border: [true, false, false, true],
+                                        style: 'approved'
                                     },
-                                    { 
-                                        text: `ลงชื่อ ${productData[0]?.namewithdraw} \n(ผู้รับสินค้า)`,
-                                        border: [false, false, false, true], 
-                                        style: 'approved' 
+                                    {
+                                        text: `ลงชื่อ ${'.'.repeat(50)} \n(ผู้รับสินค้า)`,
+                                        border: [false, false, false, true],
+                                        style: 'approved'
                                     },
-                                    { 
+                                    {
                                         text: `ลงชื่อ ${productData[0]?.nameapr} \n(ผู้อนุมัติ)`,
-                                        border: [false, false, true, true], 
-                                        style: 'approved' 
+                                        border: [false, false, true, true],
+                                        style: 'approved'
                                     }
                                 ]
                             ]
                         }
-                    }                                                                                         
+                    }
                 ],
                 styles: {
-                    withdrawId: { 
-                        fontSize: 20, 
-                        bold: true, 
-                        color: 'red', 
-                        alignment: 'right'
+                    withdrawId: {
+                        fontSize: 20,
+                        bold: true,
+                        color: 'red',
+                        alignment: 'right',
+                        margin: [0, 0, 0, -3]
                     },
                     header: { fontSize: 18, bold: true, alignment: 'center' },
-                    subheader: { fontSize: 14, bold: true, alignment: 'center'},
-                    approved: { fontSize: 12, alignment: 'center', margin: [0, 5, 0, 5]}, //ซ้าย 40, บน 20, ขวา 40, ล่าง 40
-                    tableExample: {}
+                    subheader: { fontSize: 14, bold: true, alignment: 'center' },
+                    approved: { fontSize: 12, alignment: 'center', lineHeight: 0.9, margin: [0, 15, 0, 2] },
+                    tableExample: {},
+                    cellSmall: { lineHeight: 0.9, margin: [0, 0, 0, 1] }
                 },
                 defaultStyle: {
                     font: 'THSarabunNew'

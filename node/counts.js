@@ -144,7 +144,7 @@ export async function countBossApproveMenu(idcard) {
     }
 }
 
-export async function countTopbar(idcard, depart_id) {
+export async function countTopbar(idcard, depart_id, pp_id) {
     console.log('idcard: ', idcard, ' ', depart_id);
     let maintConn, quoteConn;
 
@@ -212,12 +212,17 @@ export async function countTopbar(idcard, depart_id) {
         const countqt = resultQt?.[0]?.total ?? 0;
         const countqo = resultQo?.[0]?.total ?? 0;
 
+        const specialDeparts = ['PP004', 'PP010', 'PP012'];
+        const isSpecialDepart = specialDeparts.includes(pp_id);
         const useMcIt = Number(depart_id) === 904;
 
         // คำนวณรวม
         const totalRepair = useMcIt
             ? countApproval + countmcit + countEngIT
-            : countApproval + countEngNonIT;
+            : isSpecialDepart
+                ? countApproval + countEngNonIT
+                : countApproval;
+
 
         const totalQuote = countqt + countqo;
 
@@ -246,8 +251,8 @@ export async function countTopbar(idcard, depart_id) {
 }
 
 router.post('/count-topbar', async (req, res) => {
-    const { idcard, depart_id } = req.body;
-    const result = await countTopbar(idcard, depart_id);
+    const { idcard, depart_id, pp_id } = req.body;
+    const result = await countTopbar(idcard, depart_id, pp_id);
     res.json(result);
 });
 

@@ -4379,8 +4379,8 @@
     border-top-left-radius: 6px;
   }
   .p-dialog .p-dialog-header .p-dialog-title {
-    font-weight: 700;
-    font-size: 1.25rem;
+    font-weight: 700 !important;
+    font-size: 1.25rem !important;
   }
   .p-dialog .p-dialog-header .p-dialog-header-icon {
     width: 2rem;

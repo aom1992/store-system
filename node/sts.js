@@ -86,7 +86,7 @@ router.post('/get-request-depart', async (req, res) => {
             CONCAT(rm.request_id,' : ', rm.mc_id, ' : ', md.name_mc, ' : ', rm.detail_problem ) AS request
             FROM request_ms rm
             LEFT JOIN machaine_detail md ON md.mc_id = rm.mc_id
-            WHERE rm.tw_id = ?;
+            WHERE rm.tw_id = ? AND rm.request_id IS NOT NULL;
         `, ['TW05']);
         res.status(200).json({ success: true, data: rows });
     } catch (error) {
@@ -414,7 +414,7 @@ router.post('/get-withdrawal-detail', async (req, res) => {
                 LEFT JOIN product_list pl ON pl.product_id = pw.product_id
                 LEFT JOIN maint_system.status_ms sm ON sm.status_id = pw.status_id
                 LEFT JOIN product_unit pu ON pu.pu_id = pl.pu_id
-                LEFT JOIN emp_green.depart dep ON dep.id_depart = pw.depart_use
+                LEFT JOIN emp_green.depart dep ON dep.id_depart = pw.depart_use AND dep.st_depart = 'yes'
                 LEFT JOIN product_approval pa ON pa.pw_id = pw.pw_id
             WHERE pw.pw_id = ?;    
         `, [pw_id]);
@@ -482,24 +482,19 @@ router.post('/cancel-request', async (req, res) => {
             // อัปเดตสถานะและลดจำนวนที่ร้องขอ
             await conn.query(`
                 UPDATE product_withdraw 
-                SET status_id = ?, request_qty = request_qty - ?
+                SET status_id = ?,
+                withdraw_qty = withdraw_qty - ?
                 WHERE pw_id = ? AND product_id = ?;
             `, [statusId, reqQty, pw_id, prodId]);
 
             // อัปเดตจำนวนสินค้าที่ถูกเลือกใน stock
             await conn.query(`
                 UPDATE product_list 
-                SET product_select_mn = product_select_mn + ?
+                SET product_select_mn = product_select_mn + ?,
+                    product_remain = product_remain + ?
                 WHERE stock_id = ? AND product_id = ?;
-            `, [reqQty, stockId, prodId]);
+            `, [reqQty, reqQty, stockId, prodId]);
         }
-
-        // อัปเดตสถานะการอนุมัติ
-        await conn.query(`
-            UPDATE product_approval 
-            SET status_id = ? 
-            WHERE pw_id = ?;
-        `, [statusId, pw_id]);
 
         // เพิ่มข้อมูลใน log_detail
         await conn.query(`
@@ -1003,219 +998,98 @@ router.post('/store-delete-product', async (req, res) => {
     }
 });
 
-router.post('/store-save-withdrawal', async (req, res) => {
-    const requestData = req.body;
-    let conn;
-    const now = moment();
-    const dateTime_input = now.format('YYYY-MM-DD HH:mm:ss');
-    const year = now.add(543, 'years').format('YY');
-    const month = now.format('MM');
-    const sub_date = `NO ${year}${month}`;
-
-    try {
-        conn = await storePool.getConnection();
-        await conn.beginTransaction();
-
-        let [existingWithdraw] = await conn.query(`
-            SELECT withdraw_id FROM product_withdraw WHERE pw_id = ? LIMIT 1;
-        `, [requestData[0].pw_id]);
-
-        let withdraw_id;
-        if (existingWithdraw.length > 0 && existingWithdraw[0].withdraw_id) {
-            withdraw_id = existingWithdraw[0].withdraw_id;
-        } else {
-            const [lastWithdraw] = await conn.query(`
-                SELECT MAX(SUBSTRING(withdraw_id, 8, 3)) AS last_id
-                FROM product_withdraw
-                WHERE SUBSTRING(withdraw_id, 4, 2) = ? AND SUBSTRING(withdraw_id, 6, 2) = ?;
-            `, [year, month]);
-
-            const lastId = lastWithdraw[0].last_id ? parseInt(lastWithdraw[0].last_id, 10) + 1 : 1;
-            withdraw_id = `${sub_date}${String(lastId).padStart(3, '0')}`;
-        }
-
-        for (let row of requestData) {
-            const { pw_id, product_id, stock_id, request_qty, realWithdrawal, selectedEmp } = row;
-
-            const requestQty = Number(request_qty);
-            let new_withdraw_qty = Number(realWithdrawal);
-
-            const [existingWithdraw] = await conn.query(`
-                SELECT withdraw_qty FROM product_withdraw 
-                WHERE pw_id = ? AND product_id = ?;
-            `, [pw_id, product_id]);
-
-            if (existingWithdraw.length > 0) {
-                let currentWithdraw = Number(existingWithdraw[0].withdraw_qty || 0);
-                new_withdraw_qty += currentWithdraw;
-
-                if (new_withdraw_qty > requestQty) {
-                    await conn.rollback();
-                    return res.status(200).json({
-                        success: false,
-                        message: `จำนวนเบิกรวม (${new_withdraw_qty}) มากกว่าที่ร้องขอ (${requestQty})`
-                    });
-                }
-            }
-
-            await conn.query(`
-                UPDATE product_withdraw 
-                SET withdraw_qty = ?, withdraw_id = ?, withdraw_idcard = ?, withdraw_qty_date = ?
-                WHERE pw_id = ? AND product_id = ?;
-            `, [new_withdraw_qty, withdraw_id, selectedEmp, dateTime_input, pw_id, product_id]);
-
-            await conn.query(`
-                UPDATE product_list 
-                SET product_remain = product_remain - ?
-                WHERE product_id = ? AND stock_id = ?;
-            `, [realWithdrawal, product_id, stock_id]);
-
-            if (new_withdraw_qty === requestQty) {
-                await conn.query(`
-                    UPDATE product_withdraw 
-                    SET status_id = 'ST07' 
-                    WHERE pw_id = ? AND product_id = ?;
-                `, [pw_id, product_id]);
-            }
-        }
-
-        // ✅ ตรวจสอบว่า pw_id นี้ เบิกครบทุกสินค้าแล้วหรือยัง
-        const [remainingInPw] = await conn.query(`
-            SELECT COUNT(*) AS count
-            FROM product_withdraw
-            WHERE pw_id = ? AND (
-                COALESCE(withdraw_qty, 0) < CAST(request_qty AS UNSIGNED)
-            );
-        `, [requestData[0].pw_id]);
-
-        const isCurrentPwComplete = remainingInPw[0].count === 0;
-
-        if (isCurrentPwComplete) {
-            await conn.query(`
-                UPDATE product_approval 
-                SET status_id = ?, idcard_store = ?, store_dateTime = ?
-                WHERE pw_id = ?;
-            `, ['ST07', requestData[0].idcard, dateTime_input, requestData[0].pw_id]);
-
-            await conn.query(`
-                INSERT INTO log_detail (pw_id, status_id, idcard_input, detail, dateTime_input)
-                VALUES (?, ?, ?, ?, ?);
-            `, [requestData[0].pw_id, 'ST07', requestData[0].idcard, 'เบิกสินค้าเรียบร้อยแล้ว', dateTime_input]);
-        }
-
-        // ✅ ตรวจสอบว่า request_id นี้ ทุก pw_id เบิกครบหรือยัง
-        const [incompletePw] = await conn.query(`
-            SELECT pw_id
-            FROM product_approval
-            WHERE pw_id IN (
-                SELECT DISTINCT pw_id FROM product_withdraw WHERE request_id = ?
-            )
-            AND status_id != 'ST07';
-        `, [requestData[0].request_id]);
-
-        if (incompletePw.length === 0) {
-            await conn.query(`
-                UPDATE maint_system.request_ms 
-                SET status_id = ?
-                WHERE request_id = ?;
-            `, ['ST07', requestData[0].request_id]);
-
-            const [[{ next_role_apr }]] = await conn.query(`
-                SELECT COALESCE(MAX(role_apr), 0) + 1 AS next_role_apr 
-                FROM maint_system.detail_apr 
-                WHERE request_id = ?;
-            `, [requestData[0].request_id]);
-
-            await conn.query(`
-                INSERT INTO maint_system.detail_apr 
-                (request_id, idcard_input, details, role_apr, status_id, dateTime_apr)
-                VALUES (?, ?, ?, ?, ?, ?);
-            `, [
-                requestData[0].request_id,
-                requestData[0].idcard,
-                'เบิกสินค้าเรียบร้อยแล้ว',
-                next_role_apr,
-                'ST07',
-                dateTime_input
-            ]);
-        }
-
-        await conn.commit();
-
-        const countStoreResult = await countStoreApprove(req);
-        if (countStoreResult.status) {
-            socket.sendSumStore(countStoreResult.storeAprCount);
-        }
-
-        res.status(200).json({
-            success: true,
-            message: `เบิกสินค้าเรียบร้อย (ID: ${withdraw_id})`
-        });
-
-    } catch (error) {
-        if (conn) await conn.rollback();
-        console.error('เกิดข้อผิดพลาดในการอัปเดตข้อมูล:', error);
-        res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล' });
-    } finally {
-        if (conn) conn.release();
-    }
-});
-
 router.post('/store-edit-product', async (req, res) => {
     const { pw_id, product_id, editQty, locationUse, departUse, stock_id, idcard } = req.body;
     console.log('📌 ข้อมูลที่รับมา:', req.body);
+
     let conn;
     const now = moment();
     const dateTime_input = now.format('YYYY-MM-DD HH:mm:ss');
+    const Detail = `สโตร์คืนสินค้า ${product_id}`;
 
     try {
         conn = await storePool.getConnection();
         await conn.beginTransaction();
-        const Detail = `สโตร์คืนสินค้า ${product_id}`;
 
-        // 🔹 ตรวจสอบว่ามีค่าที่ต้องอัปเดตหรือไม่
+        // 🔸 ตรวจสอบ editQty ว่าเป็นตัวเลขและ > 0
+        const numericEditQty = Number(editQty);
+        if (!Number.isFinite(numericEditQty) || numericEditQty <= 0) {
+            return res.status(400).json({ success: false, message: 'จำนวนที่แก้ไขไม่ถูกต้องหรือเป็นศูนย์' });
+        }
+
+        // 🔸 ดึงข้อมูลปัจจุบันจาก product_withdraw
+        const [checkRows] = await conn.query(
+            `SELECT withdraw_qty, request_qty FROM product_withdraw WHERE pw_id = ? AND stock_id = ? AND product_id = ?`,
+            [pw_id, stock_id, product_id]
+        );
+
+        if (checkRows.length === 0) {
+            return res.status(404).json({ success: false, message: 'ไม่พบข้อมูลการเบิก' });
+        }
+
+        const { withdraw_qty, request_qty } = checkRows[0];
+
+        if (withdraw_qty < numericEditQty) {
+            return res.status(400).json({ success: false, message: 'จำนวนที่คืนมากกว่าจำนวนที่เบิก' });
+        }
+
+        const newWithdrawQty = withdraw_qty - numericEditQty;
+        const newRequestQty = request_qty - numericEditQty;
+
+        console.log(`🧮 คืนของ: ${numericEditQty} จากที่เบิก: ${withdraw_qty}`);
+        console.log(`📦 ยอดเบิกคงเหลือใหม่: ${newWithdrawQty}, จำนวนที่ขอเบิกใหม่: ${newRequestQty}`);
+
+        // 🔹 เตรียมฟิลด์สำหรับ UPDATE
         let updateFields = [];
         let updateValues = [];
 
-        if (editQty !== undefined) {
-            updateFields.push("request_qty = request_qty - ?");
-            updateValues.push(editQty);
+        updateFields.push("withdraw_qty = ?");
+        updateValues.push(newWithdrawQty);
+
+        updateFields.push("request_qty = ?");
+        updateValues.push(newRequestQty);
+
+        if (newWithdrawQty === 0) {
+            updateFields.push("status_id = ?");
+            updateValues.push("ST08"); // คืนครบแล้ว
         }
+
         if (locationUse !== undefined) {
             updateFields.push("location_use = ?");
             updateValues.push(locationUse);
         }
+
         if (departUse !== undefined) {
             updateFields.push("depart_use = ?");
             updateValues.push(departUse);
         }
 
-        if (updateFields.length > 0) {
-            updateValues.push(pw_id, stock_id, product_id);
-            const updateQuery = `
-                UPDATE product_withdraw 
-                SET ${updateFields.join(", ")}
-                WHERE pw_id = ? AND stock_id = ? AND product_id = ?;
-            `;
+        // 🔹 UPDATE product_withdraw
+        updateValues.push(pw_id, stock_id, product_id);
+        const updateQuery = `
+            UPDATE product_withdraw 
+            SET ${updateFields.join(", ")}
+            WHERE pw_id = ? AND stock_id = ? AND product_id = ?;
+        `;
 
-            const [updateResult] = await conn.query(updateQuery, updateValues);
-            console.log('✅ ผลลัพธ์การอัปเดต:', updateResult);
-
-            // 🔹 อัปเดต product_list อย่างถูกต้อง
-            await conn.query(`
-                UPDATE product_list 
-                SET product_select_mn = IFNULL(product_select_mn, 0) + ?
-                WHERE stock_id = ? AND product_id = ?;
-            `, [editQty, stock_id, product_id]);
-
-        } else {
-            console.log('⚠️ ไม่มีข้อมูลที่ต้องอัปเดต');
+        const [updateResult] = await conn.query(updateQuery, updateValues);
+        if (updateResult.affectedRows === 0) {
+            throw new Error('ไม่สามารถอัปเดตข้อมูลการเบิกได้');
         }
 
+        // 🔹 คืนสินค้าเข้าสต๊อกจริง + จอง
         await conn.query(`
-            INSERT INTO log_detail (pw_id, idcard_input, detail, dateTime_input)
-            VALUES (?, ?, ?, ?);
-        `, [pw_id, idcard, Detail, dateTime_input]);
+            UPDATE product_list 
+            SET product_remain = IFNULL(product_remain, 0) + ?,
+                product_select_mn = IFNULL(product_select_mn, 0) + ?
+            WHERE stock_id = ? AND product_id = ?;
+        `, [numericEditQty, numericEditQty, stock_id, product_id]);
+
+        // 🔹 บันทึก Log
+        await conn.query(`
+            INSERT INTO log_detail (pw_id, status_id, idcard_input, detail, dateTime_input)
+            VALUES (?, ?, ?, ?, ?);
+        `, [pw_id, 'ST25', idcard, Detail, dateTime_input]);
 
         console.log('✅ บันทึก Log สำเร็จ');
 
@@ -1226,7 +1100,6 @@ router.post('/store-edit-product', async (req, res) => {
         if (conn) await conn.rollback();
         console.error('❌ เกิดข้อผิดพลาดในการอัปเดตข้อมูล:', error);
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการอัปเดตข้อมูล' });
-
     } finally {
         if (conn) conn.release();
     }
@@ -1350,7 +1223,7 @@ router.post('/get-product-importb', async (req, res) => {
             FROM product_list
             WHERE stock_id = ? AND status_usage = ?
                 GROUP BY product_date, idcard_input 
-                ORDER BY product_date DESC
+                ORDER BY id DESC;
         `, ['B', 'open']);
         res.status(200).json({ success: true, data: rows });
     } catch (error) {
@@ -1397,8 +1270,10 @@ router.post('/delete-product-importb', async (req, res) => {
 
 router.post('/get-productb', async (req, res) => {
     const { date_input } = req.body;
+    let conn; // ✅ ประกาศ conn ที่นี่ เพื่อให้มีอยู่ใน scope ของ finally
+
     try {
-        let conn = await storePool.getConnection();
+        conn = await storePool.getConnection();
         const [rows] = await conn.query(`
             SELECT 
                 pl.id, pl.product_id, pl.pg_id, pl.product_detail, pl.pu_id, 
@@ -1416,7 +1291,7 @@ router.post('/get-productb', async (req, res) => {
         console.error('เกิดข้อผิดพลาดในการดึงข้อมูล :', error);
         res.status(500).json({ success: false, message: 'เกิดข้อผิดพลาดในการดึงข้อมูล' });
     } finally {
-        if (conn) conn.release();
+        if (conn) conn.release(); // ✅ จะไม่เกิด ReferenceError อีก
     }
 });
 
@@ -1459,27 +1334,28 @@ router.post('/get-allproduct-detail', async (req, res) => {
     try {
         conn = await storePool.getConnection();
 
+        const baseQuery = (stockId) => `
+            SELECT 
+                main.id, main.product_id, main.stock_id,
+                main.date_received, main.pg_id, main.product_detail,
+                pu.pu_name, main.product_remain,
+                main.product_select_mn, main.status_usage
+            FROM (
+                SELECT 
+                    pl.id, pl.product_id, pl.stock_id,
+                    DATE_FORMAT(pl.date_received, '%d-%m-%Y') AS date_received,
+                    pl.pg_id, pl.product_detail, pl.pu_id, pl.product_remain,
+                    pl.product_select_mn, pl.status_usage
+                FROM product_list pl
+                WHERE pl.stock_id = ?
+                ORDER BY pl.id DESC
+            ) AS main
+            LEFT JOIN product_unit pu ON pu.pu_id = main.pu_id
+        `;
+
         const [rowsA, rowsB] = await Promise.all([
-            conn.query(
-                `SELECT pl.id, pl.product_id, pl.stock_id,
-                    DATE_FORMAT(pl.date_received, '%d-%m-%Y') AS date_received,
-                    pl.pg_id, pl.product_detail, pu.pu_name, pl.product_remain,
-                    pl.product_select_mn, pl.status_usage
-                FROM product_list pl
-                LEFT JOIN product_unit pu ON pu.pu_id = pl.pu_id
-                WHERE pl.stock_id = ?;`,
-                ['A']
-            ),
-            conn.query(
-                `SELECT pl.id, pl.product_id, pl.stock_id,
-                    DATE_FORMAT(pl.date_received, '%d-%m-%Y') AS date_received,
-                    pl.pg_id, pl.product_detail, pu.pu_name, pl.product_remain,
-                    pl.product_select_mn, pl.status_usage
-                FROM product_list pl
-                LEFT JOIN product_unit pu ON pu.pu_id = pl.pu_id
-                WHERE pl.stock_id = ?;`,
-                ['B']
-            )
+            conn.query(baseQuery('A'), ['A']),
+            conn.query(baseQuery('B'), ['B'])
         ]);
 
         res.status(200).json({ success: true, stocka: rowsA[0], stockb: rowsB[0] });
@@ -1527,9 +1403,9 @@ router.post('/update-product-remain', async (req, res) => {
 
         await conn.query(`
             UPDATE product_list 
-            SET product_remain = ?
+            SET product_remain = ?, product_select_mn = ?
             WHERE id = ?;
-        `, [productEdit, id]);
+        `, [productEdit, productEdit, id]);
 
         const Detail = `สโตร์แก้ไขจำนวนสินค้า ${product_id} เป็น ${productEdit}`;
         await conn.query(`

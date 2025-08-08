@@ -347,6 +347,5 @@ export class UserRequestComponent implements OnInit {
     this.selectedRequestId = null;
     this.selectedRequestIdDepart = null;
     this.tableData = [];
-    this.selectedApr = null;
   }
 }

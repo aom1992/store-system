@@ -1,3 +1,17 @@
 node_modules/ 
 node/node_modules/ 
+
+
+# Node dependencies
+node_modules/ 
+node/node_modules/ 
+
+# Angular build output
+/dist
+/tmp
+/out-tsc
+/bazel-out
 .angular/ 
+
+# Uploaded files (ไม่ให้ push รูปที่ผู้ใช้แนบ)
+node/uploads/

@@ -1,67 +1,64 @@
 <div class="grid">
 	<div class="col-12">
 		<div class="card">
-            <span style="font-size: 25px; display: block;">กำหนดสิทธิ์การเข้าใช้งาน</span>
+            <span style="font-size: 25px; display: block;">ตั้งค่าเข้าใช้งาน</span>
             <li class="flex align-items-center py-3 px-2 border-top-1 surface-border flex-wrap"></li>          
             <p-toast />
 
-            <div class="p-fluid p-formgrid grid">
-                <div class="field col-12 md:mb-0">
-                    <p-table 
-                        [value]="body" 
-                        styleClass="p-datatable-striped p-datatable-gridlines" 
-                        [tableStyle]="{'min-width': '50rem'}"
-                        [globalFilterFields]="['0', '1', '2']" 
-                        #dt1 >
-                            <ng-template pTemplate="caption">
-                                <div class="flex justify-content-end flex-column sm:flex-row">
-                                    <span class="p-input-icon-left mb-2">
-                                        <i class="pi pi-search"></i>
-                                        <input 
-                                            pInputText 
-                                            type="text" 
-                                            (input)="dt1.filterGlobal($event.target.value, 'contains')" 
-                                            placeholder="ค้นหาชื่อ-นามสกุล" 
-                                            class="w-full" 
-                                            id="search"/>
-                                    </span>
-                                </div>
-                            </ng-template>
-                            <ng-template pTemplate="header">
-                                <tr>
-                                    <th class="text-center" *ngFor="let headerItem of header">
-                                        {{ headerItem }}
-                                    </th>
-                                    <th class="text-center">
-                                        <i class="fa-regular fa-pen-to-square" style="color: rgb(255, 102, 0); font-size: 2rem;"></i>
-                                    </th>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="body" let-body>
-                                <tr>
-                                    <td *ngFor="let bodyItem of body" class="text-center">
-                                        <i *ngIf="bodyItem === 'yes'" class="pi pi-check-circle" style="color: green; font-size: 2rem;"></i>
-                                        <i *ngIf="!bodyItem" class="pi pi-times-circle" style="color: red; font-size: 2rem;"></i>
-                                        <span *ngIf="bodyItem !== 'yes' && bodyItem">{{ bodyItem }}</span>
-                                    </td>
-                                    <td>
-                                        <p-button label="Edit" severity="warning" (onClick)="showCancelDialog(body[0])" />
-                                    </td>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="emptymessage">
-                                <tr>
-                                    <td colspan="8">ไม่พบข้อมูล !!</td>
-                                </tr>
-                            </ng-template>
-                            <ng-template pTemplate="loadingbody">
-                                <tr>
-                                    <td colspan="8">กำลังโหลดข้อมูล....</td>
-                                </tr>
-                            </ng-template>
-                    </p-table>
-                </div>
-            </div>                   
+            <div class="field">
+                <p-table 
+                    [value]="body" 
+                    styleClass="p-datatable-striped p-datatable-gridlines" 
+                    [tableStyle]="{'min-width': '50rem'}"
+                    [globalFilterFields]="['0', '1', '2']" 
+                    #dt1 >
+                        <ng-template pTemplate="caption">
+                            <div class="flex justify-content-end flex-column sm:flex-row">
+                                <span class="p-input-icon-left mb-2">
+                                    <i class="pi pi-search" style="font-size: 1.2rem;"></i>
+                                    <input 
+                                        pInputText 
+                                        type="text" 
+                                        (input)="dt1.filterGlobal($event.target.value, 'contains')" 
+                                        placeholder="ค้นหา..." 
+                                        id="search"/>
+                                </span>
+                            </div>
+                        </ng-template>
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th class="text-center" *ngFor="let headerItem of header">
+                                    {{ headerItem }}
+                                </th>
+                                <th class="text-center">
+                                    <i class="fa-regular fa-pen-to-square" style="color: rgb(255, 102, 0); font-size: 2rem;"></i>
+                                </th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-body>
+                            <tr>
+                                <td *ngFor="let bodyItem of body" class="text-center">
+                                    <i *ngIf="bodyItem === 'yes'" class="pi pi-check-circle" style="color: green; font-size: 2rem;"></i>
+                                    <i *ngIf="!bodyItem" class="pi pi-times-circle" style="color: red; font-size: 2rem;"></i>
+                                    <span *ngIf="bodyItem !== 'yes' && bodyItem">{{ bodyItem }}</span>
+                                </td>
+                                <td>
+                                    <p-button label="Edit" severity="warning" (onClick)="showCancelDialog(body[0])" />
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="emptymessage">
+                            <tr>
+                                <td colspan="8">ไม่พบข้อมูล !!</td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="loadingbody">
+                            <tr>
+                                <td colspan="8">กำลังโหลดข้อมูล....</td>
+                            </tr>
+                        </ng-template>
+                </p-table>
+            </div>                 
         </div>     
     </div>
 </div>

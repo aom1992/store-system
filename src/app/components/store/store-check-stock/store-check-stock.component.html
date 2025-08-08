@@ -37,13 +37,13 @@
                                 <ng-template pTemplate="caption">
                                     <div class="flex justify-content-end flex-column sm:flex-row">
                                         <span class="p-input-icon-left mb-2">
-                                            <i class="pi pi-search"></i>
+                                            <i class="pi pi-search"style="font-size: 1rem;"></i>
                                             <input 
                                                 pInputText 
                                                 type="text" 
                                                 #filter 
                                                 (input)="onGlobalFilter(historyTB, $event)" 
-                                                placeholder="Search Keyword" class="w-full" 
+                                                placeholder="ค้นหา..." 
                                                 id="search"/>
                                         </span>
                                     </div>
@@ -125,7 +125,6 @@
                                                 [(ngModel)]="data.status_usage"
                                                 (onChange)="changeStatus(data, $event.value)">
                                             </p-selectButton>
-
                                         </td>
                                         <td>
                                             <div class="flex flex-wrap gap-3 justify-content-center">
@@ -189,13 +188,13 @@
                                 <ng-template pTemplate="caption">
                                     <div class="flex justify-content-end flex-column sm:flex-row">
                                         <span class="p-input-icon-left mb-2">
-                                            <i class="pi pi-search"></i>
+                                            <i class="pi pi-search"style="font-size: 1rem;"></i>
                                             <input 
                                                 pInputText 
                                                 type="text" 
                                                 #filter 
                                                 (input)="onGlobalFilter(historyTB2, $event)" 
-                                                placeholder="Search Keyword" class="w-full" 
+                                                placeholder="ค้นหา..."
                                                 id="search"/>
                                         </span>
                                     </div>
@@ -286,7 +285,7 @@
                                                     [rounded]="true" 
                                                     [outlined]="true"
                                                     severity="success"
-                                                    [routerLink]="['/store-product-detailb', data.date_input]"
+                                                    [routerLink]="['/store-check-product', data.product_id]"
                                                     [queryParams]="{ currentMenu: menuLabel2 }"
                                                     pTooltip="ดูรายละเอียด"
                                                     tooltipPosition="top" />

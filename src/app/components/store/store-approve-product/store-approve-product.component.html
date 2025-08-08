@@ -205,7 +205,10 @@
             <div class="flex flex-wrap gap-3 justify-content-end" *ngIf="detailData[0]?.status_apr === 'ST06'">
                 <p-button label="อนุมัติการเบิก" [raised]="true" severity="success" (onClick)="withdrawApprove(detailData[0]?.request_id, detailData[0]?.withdraw_qty)" />
                 <p-button label="ยกเลิกการเบิก" [raised]="true" severity="danger" (onClick)="showCancelDialog()" />
-            </div>          
+            </div> 
+            <div class="flex flex-wrap gap-3 justify-content-end" *ngIf="detailData[0]?.status_apr === 'ST07'">
+                <p-button label="ปริ้นใบขอเบิก" [raised]="true" severity="info" (click)="printPDF(detailData[0].pw_id)" />
+            </div>         
         </div>
     </div>
 </div>

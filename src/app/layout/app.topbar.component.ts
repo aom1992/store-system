@@ -25,6 +25,7 @@ export class AppTopBarComponent implements OnInit {
     totalQuoteCount: number = 0;
     idcard: any;
     depart_id: any;
+    pp_id: any;
 
     constructor(
         public layoutService: LayoutService,
@@ -34,8 +35,10 @@ export class AppTopBarComponent implements OnInit {
     ) { }
 
     ngOnInit(): void {
-        this.idcard = this.auth.getDataLogin().idcard;
-        this.depart_id = this.auth.getDataLogin().id_depart;
+        const login = this.auth.getDataLogin();
+        this.idcard = login.idcard;
+        this.depart_id = login.id_depart;
+        this.pp_id = login.pp_id;
 
         this.loadTopbarCount();
     }
@@ -43,7 +46,8 @@ export class AppTopBarComponent implements OnInit {
     loadTopbarCount() {
         const format = {
             idcard: this.idcard,
-            depart_id: this.depart_id
+            depart_id: this.depart_id,
+            pp_id: this.pp_id
         };
         this.rest.getCountTopbar(format).pipe(timeout(60000)).subscribe({
             next: (res: any) => {
